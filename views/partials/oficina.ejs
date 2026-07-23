@@ -1,0 +1,619 @@
+<style>
+  .rx-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+  
+  /* BANNER DA SEMANA - NAVEGADOR E 7 DIAS */
+  .rx-week-banner { background: linear-gradient(135deg, var(--primary), #0D47A1); color: white; border-radius: 12px; padding: 25px 30px; margin-bottom: 25px; display: flex; flex-direction: column; gap: 20px; box-shadow: var(--shadow); }
+  .rx-week-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 20px; }
+  
+  .rx-week-nav-container { display: flex; align-items: center; gap: 15px; }
+  .rx-week-nav-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 8px; padding: 8px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+  .rx-week-nav-btn:hover { background: rgba(255,255,255,0.3); transform: scale(1.05); }
+  
+  .rx-week-stats { display: flex; gap: 15px; flex-wrap: wrap; }
+  .rx-week-stat { display: flex; flex-direction: column; align-items: center; background: rgba(255,255,255,0.15); padding: 12px 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
+  .rx-week-stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.9; font-weight: 600; margin-bottom: 5px; }
+  .rx-week-stat-value { font-size: 24px; font-weight: 700; }
+  
+  /* CARDS DOS 7 DIAS DA SEMANA */
+  .rx-week-days-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+  .rx-day-card { background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px; font-size: 12px; display: flex; flex-direction: column; gap: 8px; border: 1px solid rgba(255,255,255,0.1); transition: 0.2s; }
+  .rx-day-card:hover { background: rgba(0,0,0,0.3); }
+  .rx-day-card.missing { opacity: 0.6; border-style: dashed; justify-content: center; align-items: center; text-align: center; }
+  .rx-day-card.weekend { opacity: 0.4; } 
+  .rx-day-header { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; }
+  .rx-day-prod { display: flex; justify-content: space-between; align-items: center; }
+  .rx-day-items { opacity: 0.9; line-height: 1.4; font-size: 11px; }
+  .rx-day-just { background: rgba(244, 67, 54, 0.25); padding: 6px; border-radius: 6px; color: #FFCDD2; font-size: 10px; border-left: 2px solid #EF5350; }
+  
+  body.dark-mode .rx-week-banner { background: linear-gradient(135deg, #1565C0, #001e3c); }
+
+  .rx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+  .rx-card { background: var(--surface); padding: 20px 15px; border-radius: 12px; border: var(--card-border); box-shadow: var(--shadow); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .rx-card-title { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 8px; letter-spacing: 0.5px; }
+  .rx-card-value { font-size: 26px; font-weight: 700; color: var(--primary); line-height: 1.1; }
+  .rx-card-sub { font-size: 11px; color: var(--text-muted); margin-top: 5px; }
+  
+  .rx-table-wrapper { background: var(--surface); border-radius: 12px; border: var(--card-border); box-shadow: var(--shadow); overflow: hidden; margin-top: 20px; }
+  .rx-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .rx-table th { background: var(--primary-light); color: var(--primary); text-transform: uppercase; font-size: 11px; font-weight: 700; padding: 15px; text-align: left; }
+  .rx-table td { padding: 15px; border-bottom: 1px dashed var(--border); color: var(--text-main); vertical-align: top; }
+  .rx-table tr:last-child td { border-bottom: none; }
+  .rx-table tr:hover td { background: var(--bg-body); }
+  
+  body.dark-mode .rx-table th { background: #263238; color: var(--primary); }
+
+  .rx-history-search { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid var(--border); background: var(--surface); flex-wrap: wrap; gap: 15px; }
+  .rx-history-search input { width: 350px; padding: 10px 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-body); color: var(--text-main); font-size: 13px; outline: none; transition: 0.2s; }
+  .rx-history-search input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+</style>
+
+<div class="rx-header">
+  <h2 style="margin: 0;">Raio X da Oficina</h2>
+  
+  <div class="filter-group" style="width: 300px; position: relative;">
+    <div class="custom-dropdown" id="rxDropdown">
+        <div class="custom-dropdown-btn" onclick="toggleRxDropdown()" style="height: 42px;">
+          <span id="rxSelectedText" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; max-width:240px; font-weight: 600; color: var(--primary);">Selecione uma Oficina</span>
+          <span class="material-icons" style="font-size:18px">arrow_drop_down</span>
+        </div>
+        <div class="custom-dropdown-content" id="rxDropdownContent" style="width: 400px; right: 0; left: auto;">
+          <div class="custom-dropdown-search">
+              <input type="text" id="rxSearchInput" placeholder="Pesquisar oficina..." onkeyup="filterRxOptions(event)" onclick="event.stopPropagation()">
+          </div>
+          <div class="custom-options-wrapper" id="rxOptionsContainer"></div>
+        </div>
+    </div>
+    <input type="hidden" id="rxOficinaSelect" onchange="renderPageOficina()">
+  </div>
+</div>
+
+<div class="rx-week-banner" id="rxWeekBanner" style="display: none;">
+  <div class="rx-week-top">
+    <div class="rx-week-nav-container">
+      <button class="rx-week-nav-btn" onclick="changeRxWeek(-1)" title="Semana Anterior"><span class="material-icons">chevron_left</span></button>
+      <div style="text-align: center;">
+        <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; color: #90CAF9; margin-bottom: 2px;">Resumo Semanal</div>
+        <div style="font-size: 24px; font-weight: 700;" id="rxSemanaNum">--</div>
+        <div style="font-size: 13px; opacity: 0.9;" id="rxSemanaDatas">-- a --</div>
+      </div>
+      <button class="rx-week-nav-btn" onclick="changeRxWeek(1)" title="Próxima Semana"><span class="material-icons">chevron_right</span></button>
+      
+      <button class="btn-notif btn-notif-pri" style="margin-left: 15px; font-size: 12px; padding: 6px 12px;" onclick="generateSemanaRelatorio()"><i class="bi bi-whatsapp"></i> Relatório da Semana</button>
+      
+    </div>
+    <div class="rx-week-stats">
+      <div class="rx-week-stat">
+        <div class="rx-week-stat-label">Produção</div>
+        <div class="rx-week-stat-value" id="rxWeekProd">0</div>
+      </div>
+      <div class="rx-week-stat">
+        <div class="rx-week-stat-label">Meta</div>
+        <div class="rx-week-stat-value" id="rxWeekMeta">0</div>
+      </div>
+      <div class="rx-week-stat">
+        <div class="rx-week-stat-label">Performance</div>
+        <div class="rx-week-stat-value" id="rxWeekPerf">0%</div>
+      </div>
+      <div class="rx-week-stat">
+        <div class="rx-week-stat-label">Dias Trabalhados</div>
+        <div class="rx-week-stat-value" id="rxWeekDays">0</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="rx-week-days-grid" id="rxWeekDaysGrid">
+  </div>
+</div>
+
+<div class="rx-grid">
+  <div class="rx-card" style="border-bottom: 4px solid #1E88E5;">
+    <div class="rx-card-title">Produção Acumulada</div>
+    <div class="rx-card-value" id="rxTotalProd">0</div>
+    <div class="rx-card-sub">Peças finalizadas no período filtrado</div>
+  </div>
+  
+  <div class="rx-card" style="border-bottom: 4px solid #8E24AA;">
+    <div class="rx-card-title">Performance Global</div>
+    <div class="rx-card-value" id="rxPerfGeral">0%</div>
+    <div class="rx-card-sub">Produção Total vs Meta Total</div>
+  </div>
+
+  <div class="rx-card" style="border-bottom: 4px solid #43A047;">
+    <div class="rx-card-title">Média de Produção Diária</div>
+    <div class="rx-card-value" id="rxAvgProd">0</div>
+    <div class="rx-card-sub">Quantidade de peças por dia</div>
+  </div>
+
+  <div class="rx-card" style="border-bottom: 4px solid #00ACC1;">
+    <div class="rx-card-title">Capacidade de Mão de Obra</div>
+    <div class="rx-card-value" id="rxIntVinc">0</div>
+    <div class="rx-card-sub"><span id="rxIntRemun" style="font-weight:bold; color:var(--text-main)">0</span> Internos Remunerados</div>
+  </div>
+</div>
+
+<div class="chart-card" style="height: 350px;">
+  <canvas id="rxChart"></canvas>
+</div>
+
+<div class="rx-table-wrapper">
+  <div class="rx-history-search">
+    <div>
+        <span style="font-weight: 700; display: block; font-size: 15px;">Histórico Detalhado da Produção</span>
+        <span style="font-size: 12px; font-weight: 400; color: var(--text-muted); margin-top: 2px; display: block;">Acompanhamento diário da oficina, do mais recente para o mais antigo.</span>
+    </div>
+    <div>
+        <input type="text" id="rxDateSearch" placeholder="🔍 Pesquisar por data (ex: 15/04), peça ou observação..." onkeyup="filterRxHistory()">
+    </div>
+  </div>
+  <div style="max-height: 600px; overflow-y: auto;">
+    <table class="rx-table">
+      <thead>
+        <tr>
+          <th style="width: 140px;">Data e Status</th>
+          <th style="width: 180px;">Produção e Meta</th>
+          <th>Itens Produzidos</th>
+          <th style="width: 190px; text-align: center;">Mão de Obra (Internos)</th>
+          <th style="width: 250px;">Observações</th>
+        </tr>
+      </thead>
+      <tbody id="rxTableBody">
+        <tr><td colspan="5" style="text-align:center; padding: 30px; color:var(--text-muted)">Selecione uma oficina no topo da página.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  let rxChartInst = null;
+  let rxGlobalDaysMap = {}; 
+  let currentSelectedWeekStart = null;
+  let lastSelectedOficina = null;
+
+  const diasDaSemanaNome = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+
+  window.infoOficinasEstatico = window.infoOficinasEstatico || [];
+
+  function initOficinaData() {
+      if (document.getElementById('pageOficina').classList.contains('active')) renderPageOficina();
+  }
+
+  function getMonday(d) {
+      d = new Date(d);
+      let day = d.getDay();
+      let diff = d.getDate() - day + (day === 0 ? -6 : 1);
+      return new Date(d.setDate(diff));
+  }
+
+  function getWeekNumber(d) {
+      let target = new Date(d.valueOf());
+      let dayNr = (d.getDay() + 6) % 7;
+      target.setDate(target.getDate() - dayNr + 3);
+      let firstThursday = target.valueOf();
+      target.setMonth(0, 1);
+      if (target.getDay() !== 4) { target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7); }
+      return 1 + Math.ceil((firstThursday - target) / 604800000);
+  }
+
+  function generateSemanaRelatorio() {
+      if (!currentSelectedWeekStart) return;
+
+      let val = document.getElementById('rxOficinaSelect').value;
+      let start = new Date(currentSelectedWeekStart);
+      let end = new Date(start);
+      end.setDate(end.getDate() + 6); // Até Domingo
+
+      let weekNo = getWeekNumber(start);
+      let fmt = date => String(date.getDate()).padStart(2,'0') + '/' + String(date.getMonth()+1).padStart(2,'0');
+      let fmtFull = date => String(date.getDate()).padStart(2,'0') + '/' + String(date.getMonth()+1).padStart(2,'0') + '/' + date.getFullYear();
+      
+      let weekProd = 0;
+      let weekMeta = 0;
+      let weekDaysCount = 0;
+      
+      let daysText = '';
+
+      for(let i=0; i<7; i++) {
+          let currDate = new Date(start);
+          currDate.setDate(currDate.getDate() + i);
+          
+          let dStr = fmtFull(currDate);
+          let shortDate = fmt(currDate);
+          let dayName = diasDaSemanaNome[i];
+          let isWeekend = (i === 5 || i === 6); 
+
+          daysText += `🗓 *${dayName} (${shortDate})*\n`;
+
+          if (rxGlobalDaysMap[dStr]) {
+              let inf = rxGlobalDaysMap[dStr];
+              weekProd += inf.prod;
+              
+              let inRecess = (currDate.getTime() >= new Date(2025, 11, 23).getTime() && currDate.getTime() <= new Date(2026, 0, 2).getTime());
+              if (!inRecess) { weekMeta += inf.meta; }
+              weekDaysCount++;
+
+              let bateu = inf.prod > 0 && inf.prod >= inf.meta;
+              let isInsumo = inf.prod === 0 && inf.justs.some(j => typeof isSemInsumo === 'function' ? isSemInsumo(j) : false);
+
+              let statusText = '❌ FALHA';
+              if(bateu) statusText = '✅ OK';
+              else if(isInsumo) statusText = '⚠️ S/I';
+
+              let perc = inf.meta > 0 ? Math.round((inf.prod/inf.meta)*100) : (isInsumo ? 0 : 100);
+
+              daysText += `Status: ${statusText} (${inf.prod} / ${inf.meta}) - ${perc}%\n`;
+              
+              inf.items.forEach(it => {
+                  daysText += `- ${it.producaoDia}x ${it.item} (${it.tipo})\n`;
+              });
+              
+              let uniqJ = [...new Set(inf.justs)].filter(j => j && j.trim() !== "");
+              if(!bateu) {
+                  if(uniqJ.length > 0) daysText += `Motivo: ${uniqJ.join(', ')}\n`;
+                  else daysText += `Motivo: Não informado\n`;
+              }
+          } else {
+              if (isWeekend) {
+                  daysText += `Sem Expediente\n`;
+              } else {
+                  daysText += `⚪ Sem Relatório\n`;
+              }
+          }
+          daysText += `\n`;
+      }
+
+      let weekPerf = weekMeta > 0 ? Math.round((weekProd / weekMeta) * 100) : (weekProd > 0 ? 100 : 0);
+
+      let text = `*📊 RELATÓRIO SEMANAL - ${val}*\n`;
+      text += `*Semana ${weekNo} (${fmt(start)} a ${fmt(end)})*\n\n`;
+      
+      text += `*Resumo da Semana:*\n`;
+      text += `Produção: ${weekProd}\n`;
+      text += `Meta: ${weekMeta}\n`;
+      text += `Performance: ${weekPerf}%\n`;
+      text += `Dias Trabalhados: ${weekDaysCount}\n\n`;
+
+      text += `*--- DETALHES POR DIA ---*\n\n`;
+      text += daysText;
+
+      openWhatsModal(text.trim());
+  }
+
+  function setupRxDropdown(oficinas) {
+      let optsContainer = document.getElementById('rxOptionsContainer');
+      optsContainer.innerHTML = '';
+      oficinas.forEach(of => {
+          let optDiv = document.createElement('div');
+          optDiv.className = 'custom-option';
+          optDiv.innerText = of;
+          optDiv.onclick = (e) => {
+              e.stopPropagation();
+              document.getElementById('rxSelectedText').innerText = of;
+              document.getElementById('rxSelectedText').style.color = "var(--text-main)";
+              document.getElementById('rxOficinaSelect').value = of;
+              document.getElementById('rxDropdownContent').style.display = 'none';
+              renderPageOficina();
+          };
+          optsContainer.appendChild(optDiv);
+      });
+  }
+
+  function toggleRxDropdown() {
+      let content = document.getElementById('rxDropdownContent');
+      let isHidden = content.style.display === 'none' || content.style.display === '';
+      if (isHidden) {
+          content.style.display = 'flex';
+          document.getElementById('rxSearchInput').value = '';
+          filterRxOptions(); 
+          setTimeout(() => document.getElementById('rxSearchInput').focus(), 50);
+      } else {
+          content.style.display = 'none';
+      }
+  }
+
+  function filterRxOptions(e) {
+      if (e) e.stopPropagation();
+      let query = document.getElementById('rxSearchInput').value.toLowerCase();
+      let opts = document.querySelectorAll('#rxOptionsContainer .custom-option');
+      opts.forEach(opt => {
+          if (opt.innerText.toLowerCase().includes(query)) opt.style.display = 'block';
+          else opt.style.display = 'none';
+      });
+  }
+
+  document.addEventListener('click', function(event) {
+      let dropdown = document.getElementById('rxDropdown');
+      let content = document.getElementById('rxDropdownContent');
+      if (dropdown && content && !dropdown.contains(event.target)) content.style.display = 'none';
+  });
+
+  function filterRxHistory() {
+      let query = document.getElementById('rxDateSearch').value.toLowerCase();
+      let rows = document.querySelectorAll('#rxTableBody tr');
+      rows.forEach(r => {
+          if (r.innerText.toLowerCase().includes(query)) r.style.display = '';
+          else r.style.display = 'none';
+      });
+  }
+
+  function changeRxWeek(offset) {
+      if (!currentSelectedWeekStart) return;
+      currentSelectedWeekStart.setDate(currentSelectedWeekStart.getDate() + (offset * 7));
+      renderWeeklyBanner();
+  }
+
+  function renderWeeklyBanner() {
+      if (!currentSelectedWeekStart) {
+          document.getElementById('rxWeekBanner').style.display = 'none';
+          return;
+      }
+
+      document.getElementById('rxWeekBanner').style.display = 'flex';
+
+      let start = new Date(currentSelectedWeekStart);
+      let end = new Date(start);
+      end.setDate(end.getDate() + 6); // Até Domingo
+
+      let weekNo = getWeekNumber(start);
+      let fmt = date => String(date.getDate()).padStart(2,'0') + '/' + String(date.getMonth()+1).padStart(2,'0');
+      
+      document.getElementById('rxSemanaNum').innerText = 'Semana ' + weekNo;
+      document.getElementById('rxSemanaDatas').innerText = fmt(start) + ' a ' + fmt(end);
+
+      let weekProd = 0;
+      let weekMeta = 0;
+      let weekDaysCount = 0;
+      let weekDaysHtml = '';
+
+      for(let i=0; i<7; i++) {
+          let currDate = new Date(start);
+          currDate.setDate(currDate.getDate() + i);
+          
+          let dStr = String(currDate.getDate()).padStart(2,'0') + '/' + String(currDate.getMonth()+1).padStart(2,'0') + '/' + currDate.getFullYear();
+          let shortDate = String(currDate.getDate()).padStart(2,'0') + '/' + String(currDate.getMonth()+1).padStart(2,'0');
+          let dayName = diasDaSemanaNome[i];
+          let isWeekend = (i === 5 || i === 6); 
+
+          if (rxGlobalDaysMap[dStr]) {
+              let inf = rxGlobalDaysMap[dStr];
+              weekProd += inf.prod;
+              
+              let inRecess = (currDate.getTime() >= new Date(2025, 11, 23).getTime() && currDate.getTime() <= new Date(2026, 0, 2).getTime());
+              if (!inRecess) { weekMeta += inf.meta; }
+              weekDaysCount++;
+
+              let bateu = inf.prod > 0 && inf.prod >= inf.meta;
+              let isInsumo = inf.prod === 0 && inf.justs.some(j => typeof isSemInsumo === 'function' ? isSemInsumo(j) : false);
+
+              let statusBadge = '';
+              if(bateu) statusBadge = '<span style="background:#4CAF50; color:white; padding:3px 6px; border-radius:4px; font-size:9px; font-weight:700;">OK</span>';
+              else if(isInsumo) statusBadge = '<span style="background:#FF9800; color:white; padding:3px 6px; border-radius:4px; font-size:9px; font-weight:700;">S/I</span>';
+              else statusBadge = '<span style="background:#EF5350; color:white; padding:3px 6px; border-radius:4px; font-size:9px; font-weight:700;">FALHA</span>';
+
+              let perc = inf.meta > 0 ? Math.round((inf.prod/inf.meta)*100) : (isInsumo ? 0 : 100);
+
+              let itemsList = inf.items.map(it => `<div style="margin-bottom:3px;"><b>${it.producaoDia}x</b> <span style="opacity:0.9">${it.item}</span></div>`).join('');
+              
+              let justHtml = '';
+              let uniqJ = [...new Set(inf.justs)].filter(j => j && j.trim() !== "");
+              if(!bateu) {
+                  let txtJust = uniqJ.length > 0 ? uniqJ.join(', ') : 'Não informado';
+                  justHtml = `<div class="rx-day-just"><b style="color:white;">Motivo:</b> ${txtJust}</div>`;
+              }
+
+              weekDaysHtml += `
+              <div class="rx-day-card">
+                  <div class="rx-day-header">
+                      <span>${dayName} <span style="opacity:0.6; font-size:10px; font-weight:400;">${shortDate}</span></span>
+                      ${statusBadge}
+                  </div>
+                  <div class="rx-day-prod">
+                      <span style="font-size:16px; font-weight:700;">${inf.prod} <span style="font-size:10px; font-weight:400; opacity:0.6;">/ ${inf.meta} m.</span></span>
+                      <span style="font-weight:700; opacity:0.9; font-size: 12px;">${perc}%</span>
+                  </div>
+                  <div class="rx-day-items">${itemsList}</div>
+                  ${justHtml}
+              </div>`;
+
+          } else {
+              if (isWeekend) {
+                  weekDaysHtml += `
+                  <div class="rx-day-card missing weekend">
+                      <div style="font-weight:700; margin-bottom:4px;">${dayName} <span style="opacity:0.6; font-size:10px; font-weight:400;">${shortDate}</span></div>
+                      <div style="opacity:0.8; font-style:italic;">Sem Expediente</div>
+                  </div>`;
+              } else {
+                  weekDaysHtml += `
+                  <div class="rx-day-card missing">
+                      <div style="font-weight:700; margin-bottom:4px;">${dayName} <span style="opacity:0.6; font-size:10px; font-weight:400;">${shortDate}</span></div>
+                      <div style="opacity:0.8; font-style:italic;">Sem Relatório</div>
+                  </div>`;
+              }
+          }
+      }
+
+      let weekPerf = weekMeta > 0 ? Math.round((weekProd / weekMeta) * 100) : (weekProd > 0 ? 100 : 0);
+
+      document.getElementById('rxWeekProd').innerText = weekProd;
+      document.getElementById('rxWeekMeta').innerText = weekMeta;
+      document.getElementById('rxWeekPerf').innerText = weekPerf + '%';
+      document.getElementById('rxWeekDays').innerText = weekDaysCount;
+      document.getElementById('rxWeekDaysGrid').innerHTML = weekDaysHtml;
+  }
+
+  function renderPageOficina() {
+      if (typeof rawData === 'undefined' || rawData.length === 0) return;
+
+      let val = document.getElementById('rxOficinaSelect').value;
+      
+      if (!val) {
+          let ofs = [...new Set(rawData.map(r => r.oficina))].sort();
+          setupRxDropdown(ofs);
+          val = ofs[0]; 
+          document.getElementById('rxSelectedText').innerText = val;
+          document.getElementById('rxSelectedText').style.color = "var(--text-main)";
+          document.getElementById('rxOficinaSelect').value = val;
+      }
+
+      if (val !== lastSelectedOficina) {
+          currentSelectedWeekStart = null;
+          lastSelectedOficina = val;
+      }
+
+      let dates = getFilterDates();
+      let filtered = rawData.filter(r => r.oficina === val && r.dateObj >= dates.start && r.dateObj <= dates.end);
+
+      rxGlobalDaysMap = {};
+      filtered.forEach(r => {
+          if (!rxGlobalDaysMap[r.data]) {
+              rxGlobalDaysMap[r.data] = { prod: 0, intVinc: r.internosVinc, intProd: r.internos, items: [], justs: [] };
+          }
+          rxGlobalDaysMap[r.data].prod += r.producaoDia;
+          rxGlobalDaysMap[r.data].items.push(r);
+          if (r.justificativa) rxGlobalDaysMap[r.data].justs.push(r.justificativa);
+          rxGlobalDaysMap[r.data].intVinc = Math.max(rxGlobalDaysMap[r.data].intVinc, r.internosVinc);
+          rxGlobalDaysMap[r.data].intProd = Math.max(rxGlobalDaysMap[r.data].intProd, r.internos);
+      });
+
+      let dateKeys = Object.keys(rxGlobalDaysMap).sort((a,b) => {
+         let da=a.split('/'), db=b.split('/');
+         return new Date(da[2],da[1]-1,da[0]) - new Date(db[2],db[1]-1,db[0]);
+      });
+
+      if (!currentSelectedWeekStart && dateKeys.length > 0) {
+          let latestDate = dateKeys[dateKeys.length - 1];
+          let pts = latestDate.split('/');
+          currentSelectedWeekStart = getMonday(new Date(pts[2], pts[1]-1, pts[0]));
+      }
+
+      renderWeeklyBanner();
+
+      let totalProd = 0;
+      let totalGlobalMeta = 0;
+      let daysCount = dateKeys.length;
+      let latestIntVinc = 0;
+
+      if (daysCount > 0) {
+          latestIntVinc = rxGlobalDaysMap[dateKeys[daysCount - 1]].intVinc;
+      }
+
+      let trs = '';
+      let prodData = [];
+
+      dateKeys.forEach(d => {
+          let inf = rxGlobalDaysMap[d];
+          let validItems = inf.items.filter(r => !(r.producaoDia === 0 && (typeof isSemInsumo === 'function' ? isSemInsumo(r.justificativa) : false)));
+          inf.meta = validItems.length > 0 ? (typeof calculateDynamicMeta === 'function' ? calculateDynamicMeta(validItems) : 0) : 0;
+          
+          totalProd += inf.prod;
+          
+          let pts = d.split('/');
+          let dTime = new Date(pts[2], pts[1]-1, pts[0]).getTime();
+          let inRecess = (dTime >= new Date(2025, 11, 23).getTime() && dTime <= new Date(2026, 0, 2).getTime());
+          if (!inRecess) { totalGlobalMeta += inf.meta; }
+
+          prodData.push(inf.prod);
+      });
+
+      [...dateKeys].reverse().forEach(d => {
+          let inf = rxGlobalDaysMap[d];
+          
+          let bateu = inf.prod > 0 && inf.prod >= inf.meta;
+          let isInsumo = inf.prod === 0 && inf.justs.some(j => typeof isSemInsumo === 'function' ? isSemInsumo(j) : false);
+          
+          let statusText = 'INSUFICIENTE';
+          let statusClass = 'fail';
+          if(bateu) { statusText = 'SATISFATÓRIO'; statusClass = 'ok'; }
+          else if(isInsumo) { statusText = 'SEM INSUMO'; statusClass = 'insumo'; }
+
+          let perc = inf.meta > 0 ? Math.round((inf.prod / inf.meta) * 100) : (isInsumo ? 0 : 100);
+          let percColor = bateu ? 'var(--success-text)' : (isInsumo ? 'var(--warning-text-dark)' : 'var(--danger-text)');
+
+          let prodPorIntStr = inf.intProd > 0 ? (inf.prod / inf.intProd).toFixed(1).replace('.', ',') : '0,0';
+          
+          let itemsText = inf.items.map(i => `<div style="margin-bottom:6px; font-size:13px;"><b>${i.producaoDia}x</b> ${i.item} <span style="color:var(--text-muted)">(${i.tipo})</span></div>`).join('');
+          
+          let uniqJ = [...new Set(inf.justs)].filter(j => j && j.trim() !== "");
+          let justHtml = '';
+          
+          if (!bateu) {
+              let txtJust = uniqJ.length > 0 ? uniqJ.join(', ') : 'Não informado';
+              justHtml = `<div style="background: var(--danger-bg); border-left: 3px solid var(--danger-text); padding: 8px 12px; border-radius: 6px; font-size: 12px; color: var(--danger-text);">
+                            <span style="font-weight:700">Motivo:</span> ${txtJust}
+                          </div>`;
+          }
+
+          trs += `<tr>
+            <td>
+              <div style="font-size:15px; font-weight:700; margin-bottom: 8px; color:var(--text-main);">${d}</div>
+              <span class="pill ${statusClass}" style="display:inline-block; font-size:10px; padding:5px 10px;">${statusText}</span>
+            </td>
+            <td>
+              <div style="margin-bottom: 4px;">
+                 <span style="font-size:24px; font-weight:700; color:var(--primary); line-height:1;">${inf.prod}</span> 
+                 <span style="font-size:13px; color:var(--text-muted); font-weight:600;">/ ${inf.meta} (Meta)</span>
+              </div>
+              <div style="font-size:13px; font-weight:700; color:${percColor};">${perc}% de Performance</div>
+            </td>
+            <td>${itemsText}</td>
+            <td style="text-align:center;">
+              <div style="font-size:13px; color:var(--text-muted); margin-bottom:6px; display:flex; flex-direction:column; gap:3px;">
+                 <span>Vinculados: <b style="color:var(--text-main)">${inf.intVinc}</b></span>
+                 <span>Produzindo: <b style="color:var(--primary)">${inf.intProd}</b></span>
+              </div>
+              <div style="font-size:11px; background:var(--bg-body); padding:5px 8px; border-radius:6px; display:inline-block; border: 1px solid var(--border); margin-top:4px;">
+                 <b style="font-size: 13px;">${prodPorIntStr}</b> <span style="color:var(--text-muted)">Peças por Interno</span>
+              </div>
+            </td>
+            <td>${justHtml}</td>
+          </tr>`;
+      });
+
+      let avgProd = daysCount ? Math.round(totalProd / daysCount) : 0;
+      let globalPerf = totalGlobalMeta > 0 ? Math.round((totalProd / totalGlobalMeta) * 100) : 0;
+      if (totalGlobalMeta === 0 && totalProd > 0) globalPerf = 100;
+      
+      let infoBase = window.infoOficinasEstatico.find(x => x.nome === val);
+      let remunCount = infoBase ? infoBase.remunerados : '0';
+
+      document.getElementById('rxTotalProd').innerText = totalProd;
+      document.getElementById('rxPerfGeral').innerText = globalPerf + '%';
+      document.getElementById('rxAvgProd').innerText = avgProd;
+      document.getElementById('rxIntVinc').innerText = latestIntVinc;
+      document.getElementById('rxIntRemun').innerText = remunCount;
+      
+      document.getElementById('rxTableBody').innerHTML = trs || '<tr><td colspan="5" style="text-align:center; padding: 30px; color:var(--text-muted)">Nenhuma produção registrada neste período.</td></tr>';
+      document.getElementById('rxDateSearch').value = '';
+
+      if (rxChartInst) rxChartInst.destroy();
+      if (!document.getElementById('pageOficina').classList.contains('active')) return;
+
+      let ctx = document.getElementById('rxChart').getContext('2d');
+      let gridColor = getThemeColor('--chart-grid');
+      let txtColor = getThemeColor('--text-muted');
+
+      rxChartInst = new Chart(ctx, {
+          type: 'bar',
+          data: {
+              labels: dateKeys,
+              datasets: [{
+                  label: 'Produção Diária',
+                  data: prodData,
+                  backgroundColor: '#1E88E5',
+                  borderRadius: 4,
+                  datalabels: { color: 'white', font: {weight:'bold'}, anchor: 'end', align: 'top', offset: 2 }
+              }]
+          },
+          options: {
+              responsive: true, maintainAspectRatio: false,
+              scales: {
+                  x: { grid: {display:false}, ticks: {color: txtColor} },
+                  y: { beginAtZero: true, grid:{color: gridColor}, ticks: {color: txtColor} }
+              },
+              plugins: { 
+                  legend: { display: false },
+                  title: { display: true, text: 'Volume de Produção Diário (Período Completo)', color: txtColor, align: 'start', font: {size: 14, weight: '600'} }
+              }
+          }
+      });
+  }
+</script>

@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    
+    <style>
+      :root {
+        /* TEMA CLARO */
+        --bg-body: #F0F4F8;
+        --surface: #FFFFFF;
+        --sidebar-bg: #FFFFFF;
+        --primary: #1565C0;
+        --primary-light: #E3F2FD;
+        --text-main: #333333;
+        --text-muted: #666666;
+        --border: #E0E0E0;
+        --shadow: 0 4px 12px rgba(0,0,0,0.05);
+        --chart-grid: #f0f0f0;
+        --card-border: 1px solid #E0E0E0;
+        
+        --success-bg: #E8F5E9; --success-text: #2E7D32;
+        --danger-bg: #FFEBEE; --danger-text: #C62828;
+        --neutral-bg: #F5F5F5; --neutral-text: #757575;
+        
+        --alert-bg: #FFEB3B; 
+        --alert-text: #000000;
+        --alert-border: #F9A825;
+
+        --insumo-bg: #673AB7;
+        --insumo-text: #FFFFFF;
+        
+        --warning-bg: #FFF9C4; --warning-text: #FBC02D; --warning-text-dark: #F57F17;
+      }
+
+      /* TEMA ESCURO */
+      body.dark-mode {
+        --bg-body: #121212;
+        --surface: #1E1E1E;
+        --sidebar-bg: #1E1E1E;
+        --primary: #90CAF9;
+        --primary-light: #263238;
+        --text-main: #E0E0E0;
+        --text-muted: #B0B0B0;
+        --border: #333333;
+        --shadow: 0 4px 12px rgba(0,0,0,0.3);
+        --chart-grid: #333333;
+        --card-border: 1px solid #333;
+        
+        --success-bg: rgba(46, 125, 50, 0.2); --success-text: #81C784;
+        --danger-bg: rgba(198, 40, 40, 0.2); --danger-text: #E57373;
+        --neutral-bg: rgba(117, 117, 117, 0.2); --neutral-text: #BDBDBD;
+        
+        --alert-bg: #FDD835; 
+        --alert-text: #000000;
+        --alert-border: #F9A825;
+        
+        --insumo-bg: #512DA8;
+        
+        --warning-bg: rgba(253, 216, 53, 0.2); --warning-text: #FFF59D; --warning-text-dark: #FDD835;
+      }
+
+      * { box-sizing: border-box; }
+      body { font-family: 'Poppins', sans-serif; margin: 0; background: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; transition: 0.3s; }
+
+      /* SIDEBAR */
+      .sidebar { width: 260px; background: var(--sidebar-bg); display: flex; flex-direction: column; border-right: 1px solid var(--border); z-index: 10; transition: 0.3s; }
+      .logo { padding: 30px; font-size: 18px; font-weight: 700; color: var(--primary); display: flex; align-items: center; border-bottom: 1px solid var(--border); }
+      .menu { flex: 1; padding: 20px; overflow-y: auto; }
+      .nav-btn { width: 100%; background: none; border: none; padding: 12px 16px; text-align: left; font-size: 14px; font-weight: 500; color: var(--text-muted); cursor: pointer; border-radius: 8px; display: flex; align-items: center; gap: 12px; margin-bottom: 5px; transition: 0.2s; }
+      .nav-btn:hover { background: var(--primary-light); color: var(--primary); }
+      .nav-btn.active { background: var(--primary); color: #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+      
+      .mode-toggle { padding: 20px; border-top: 1px solid var(--border); }
+      .toggle-btn { display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-muted); font-size: 14px; }
+
+      /* MAIN */
+      .main { flex: 1; padding: 30px; overflow-y: auto; }
+      
+      .top-bar { background: var(--surface); padding: 15px 25px; border-radius: 12px; box-shadow: var(--shadow); border: var(--card-border); margin-bottom: 10px; }
+      .filters-row { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
+      .filter-group label { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 5px; }
+      input, select { padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text-main); outline: none; }
+      
+      .info-text { font-size: 12px; color: var(--text-muted); margin-bottom: 30px; margin-left: 5px; margin-top: 5px; display: flex; align-items: center; gap: 5px; }
+
+      .page { display: none; animation: fadeIn 0.4s ease; }
+      .page.active { display: block; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
+
+      h2 { color: var(--text-main); margin-bottom: 20px; font-weight: 600; }
+
+      /* MODAL GENÉRICO */
+      .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); animation: fadeIn 0.3s; }
+      .modal-content { background-color: var(--surface); margin: 10% auto; padding: 25px; border: 1px solid var(--border); width: 400px; max-width: 90%; border-radius: 12px; box-shadow: var(--shadow); position: relative; color: var(--text-main); }
+      .close { color: var(--text-muted); float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+      .close:hover { color: var(--primary); }
+      #modalList { max-height: 300px; overflow-y: auto; margin-top: 15px; }
+      .modal-item { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+
+      /* RANKING STYLES */
+      .ranking-container { margin-bottom: 30px; background: var(--surface); border-radius: 12px; padding: 20px; border: var(--card-border); box-shadow: var(--shadow); }
+      .ranking-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+      .ranking-title { font-weight: 700; font-size: 16px; color: var(--text-main); }
+      .ranking-period { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+      
+      .rank-list { display: grid; grid-template-columns: 1fr; gap: 10px; }
+      
+      .rank-item { 
+        display: flex; 
+        align-items: center; 
+        background: var(--bg-body); 
+        padding: 10px 15px; 
+        border-radius: 8px; 
+        border: 1px solid var(--border); 
+        transition: 0.2s; 
+        gap: 15px;
+      }
+      .rank-item:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
+      
+      .rank-pos { 
+        min-width: 40px; 
+        text-align: center; 
+        font-weight: 700; 
+        font-size: 18px; 
+        color: var(--text-muted); 
+      }
+      
+      .rank-info { 
+        flex: 1; 
+        display: flex; 
+        flex-direction: column; 
+        justify-content: center;
+        overflow: hidden; 
+      }
+      
+      .rank-name { 
+        font-weight: 600; 
+        font-size: 14px; 
+        color: var(--text-main); 
+        margin-bottom: 4px; 
+        white-space: nowrap; 
+        overflow: hidden; 
+        text-overflow: ellipsis; 
+      }
+      
+      .rank-bar-bg { height: 6px; width: 100%; background: #e0e0e0; border-radius: 3px; overflow: hidden; }
+      .rank-bar-fill { height: 100%; border-radius: 3px; }
+      
+      .rank-val { 
+        font-size: 15px; 
+        font-weight: 700; 
+        text-align: right; 
+        min-width: 50px; 
+        color: var(--text-main); 
+      }
+
+      /* ESTILOS DAS PÁGINAS ANTERIORES */
+      .p1-summary-row { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
+      .p1-stat-card { flex: 1; background: var(--surface); border: var(--card-border); border-radius: 12px; padding: 15px; box-shadow: var(--shadow); display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 150px; }
+      .p1-stat-val { font-size: 24px; font-weight: 700; margin-top: 5px; }
+      
+      .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+      .card { background: var(--surface); border-radius: 12px; box-shadow: var(--shadow); border: var(--card-border); overflow: hidden; }
+      .card-header { padding: 15px 20px; background: var(--primary-light); display: flex; justify-content: space-between; align-items: flex-start; }
+      body.dark-mode .card-header { color: var(--text-main); }
+      
+      .pill { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+      .pill.ok { background: var(--success-bg); color: var(--success-text); }
+      .pill.fail { background: var(--danger-bg); color: var(--danger-text); }
+      .pill.neutral { background: var(--neutral-bg); color: var(--neutral-text); }
+      .pill.insumo { background: var(--warning-bg); color: var(--warning-text-dark); }
+      
+      .item-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 13px; }
+
+      .chip-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+      .chip { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; font-size: 13px; color: var(--text-muted); transition: 0.2s; }
+      .chip:hover { border-color: var(--primary); color: var(--primary); }
+      .chip.selected { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+      .chart-card { background: var(--surface); padding: 20px; border-radius: 12px; box-shadow: var(--shadow); border: var(--card-border); margin-bottom: 20px; animation: slideDown 0.3s ease; }
+      @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+      .p2-header-right { text-align: right; display: flex; flex-direction: column; gap: 5px; align-items: flex-end; }
+      .perf-label { font-size: 16px; font-weight: 700; padding: 5px 12px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+      .perf-red { background: var(--danger-bg); color: var(--danger-text); }
+      .perf-green { background: var(--success-bg); color: var(--success-text); }
+      
+      .missing-label { 
+        font-size: 13px; color: var(--alert-text); background: var(--alert-bg); padding: 5px 10px; border-radius: 6px; font-weight: 700; cursor: pointer; transition:0.2s; border: 1px solid var(--alert-border); box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .missing-label:hover { filter: brightness(0.95); transform: translateY(-1px); }
+
+      .insumo-label {
+        font-size: 13px; color: var(--insumo-text); background: var(--insumo-bg); padding: 5px 10px; border-radius: 6px; font-weight: 700; cursor: pointer; transition:0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .insumo-label:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+      .legend-highlight { background: #FFF9C4; border: 1px solid #FBC02D; color: #F57F17; font-weight: 600; padding: 10px; border-radius: 8px; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 13px; }
+      body.dark-mode .legend-highlight { background: #332F00; border-color: #F9A825; color: #FFEE58; }
+
+      .summary-bar { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
+      .summary-item { background: var(--primary); color: white; padding: 10px 15px; border-radius: 8px; font-size: 13px; font-weight: 500; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+      .selection-panel { display: grid; grid-template-columns: 280px 1fr; gap: 20px; }
+      .panel-list { background: var(--surface); padding: 15px; border-radius: 12px; border: var(--card-border); height: 400px; overflow-y: auto; }
+      .check-item { display: flex; align-items: center; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 13px; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+      .check-item:hover { background: var(--primary-light); color: var(--primary); }
+      .check-item input { margin-right: 10px; }
+
+      .detail-card { background: var(--surface); border-radius: 8px; border: var(--card-border); margin-bottom: 10px; overflow: hidden; }
+      .detail-head { padding: 15px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+      .detail-head:hover { background: var(--primary-light); }
+      .detail-content { display: none; padding: 15px; background: var(--surface); border-top: 1px solid var(--border); }
+      .detail-card.open .detail-content { display: block; }
+      .row-day { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+      .just-note { font-size: 12px; color: var(--danger-text); background: var(--danger-bg); padding: 5px 10px; border-radius: 4px; margin-top: 5px; }
+
+      #loading { position: fixed; inset: 0; background: var(--bg-body); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--primary); }
+      
+      .search-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text-main); font-size: 13px; outline: none; transition: border-color 0.2s; margin-bottom: 10px; }
+      .search-input:focus { border-color: var(--primary); }
+
+      /* DROPDOWN CUSTOMIZADO */
+      .custom-dropdown { position: relative; width: 100%; user-select: none; }
+      .custom-dropdown-btn { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text-main); font-size: 13px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+      .custom-dropdown-btn:hover { border-color: var(--primary); }
+      
+      .custom-dropdown-content { display: none; position: absolute; top: 100%; left: 0; right: 0; margin-top: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); z-index: 100; max-height: 280px; flex-direction: column; }
+      .custom-dropdown-search { padding: 8px; border-bottom: 1px solid var(--border); background: var(--surface); border-radius: 6px 6px 0 0; }
+      .custom-dropdown-search input { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; outline: none; background: var(--bg-body); color: var(--text-main); }
+      .custom-dropdown-search input:focus { border-color: var(--primary); }
+      
+      .custom-options-wrapper { overflow-y: auto; flex: 1; padding: 5px 0; }
+      .custom-option { padding: 10px 15px; font-size: 13px; cursor: pointer; color: var(--text-main); border-bottom: 1px solid var(--border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .custom-option:last-child { border-bottom: none; }
+      .custom-option:hover { background: var(--primary-light); color: var(--primary); font-weight: 500; }
+
+      /* --- CSS DA NOTIFICAÇÃO DA SEMANA (MODAL + SANFONA P/ MALHARIA) --- */
+      @keyframes slideDownFadIn {
+          from { opacity: 0; transform: translateY(-30px); }
+          to { opacity: 1; transform: translateY(0); }
+      }
+      .notif-overlay {
+          position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+          background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+          z-index: 10500; display: none; align-items: center; justify-content: center;
+      }
+      .notif-box {
+          background: var(--surface); width: 95%; max-width: 600px;
+          max-height: 85vh; border-radius: 16px; display: flex; flex-direction: column;
+          box-shadow: 0 15px 50px rgba(0,0,0,0.5); overflow: hidden;
+          border: 1px solid var(--border);
+          animation: slideDownFadIn 0.3s ease-out forwards;
+          color: var(--text-main);
+      }
+      .notif-header {
+          padding: 20px; background: var(--primary); color: #fff;
+          display: flex; justify-content: space-between; align-items: center;
+      }
+      .notif-header h5 { margin: 0; font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 10px;}
+      .notif-close { cursor: pointer; background: none; border: none; color: white; font-size: 24px; transition: 0.2s; }
+      .notif-close:hover { transform: scale(1.1); }
+      .notif-body { padding: 20px; overflow-y: auto; flex: 1; }
+      .notif-footer {
+          padding: 15px 20px; border-top: 1px solid var(--border);
+          display: flex; justify-content: flex-end; gap: 10px; background: var(--bg-body);
+      }
+      
+      /* Sanfona (Accordion) das notificações */
+      .notif-item { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 12px; }
+      .notif-item:last-child { margin-bottom: 0; }
+      .notif-item-header { padding: 15px; background: var(--bg-body); cursor: pointer; transition: background 0.2s; }
+      .notif-item-header:hover { filter: brightness(0.95); }
+      .notif-item-header .header-row-1 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;}
+      .notif-item-header .header-row-2 { display: flex; justify-content: space-between; align-items: center; font-size: 13px;}
+      .notif-item-header .material-icons { transition: transform 0.3s; color: var(--text-muted); }
+      .notif-item-header.expanded .material-icons { transform: rotate(180deg); }
+      
+      .notif-item-body { display: none; padding: 15px; border-top: 1px solid var(--border); background: var(--surface); }
+      .notif-item-body.show { display: block; }
+      
+      .notif-item-list { list-style: none; padding: 0; margin: 0; }
+      .notif-item-list li {
+          background: var(--bg-body); padding: 8px 12px; border-radius: 6px;
+          margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; border: 1px solid var(--border);
+      }
+      
+      .badge-warning { background: #FFF9C4; color: #F57F17; font-weight: 600; padding: 4px 8px; border-radius: 6px; font-size: 11px; }
+      .badge-danger { background: #FFEBEE; color: #C62828; font-weight: 600; padding: 4px 8px; border-radius: 6px; font-size: 11px; }
+
+      .btn-notif { padding: 10px 15px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; font-size: 14px; display: flex; align-items: center; gap: 8px; transition: 0.2s;}
+      .btn-notif-sec { background: var(--bg-body); color: var(--text-main); border: 1px solid var(--border); }
+      .btn-notif-sec:hover { background: var(--border); }
+      .btn-notif-pri { background: #4CAF50; color: white; }
+      .btn-notif-pri:hover { background: #388E3C; }
+    </style>
+  </head>
+  <body>
+
+    <div class="sidebar">
+      <!-- LOGO E SINO DE NOTIFICAÇÕES -->
+      <div class="logo" style="justify-content: space-between; padding-right: 15px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="material-icons">dashboard</span><span>DASHBOARD</span>
+          </div>
+          <div style="position: relative; cursor: pointer; display: flex; align-items: center;" onclick="openNotifications()" title="Entregas da Semana" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" style="transition: transform 0.2s;">
+              <span class="material-icons" style="font-size: 26px; color: var(--primary);">notifications</span>
+              <span id="notifBadge" style="display:none; position: absolute; top: -5px; right: -5px; background: #E53935; color: white; font-size: 10px; font-weight: bold; width: 16px; height: 16px; border-radius: 50%; text-align: center; line-height: 16px; border: 2px solid var(--sidebar-bg);">0</span>
+          </div>
+      </div>
+
+      <div class="menu">
+        <button class="nav-btn active" onclick="showPage('page1')"><span class="material-icons">today</span> Diário</button>
+        <button class="nav-btn" onclick="showPage('pageOficina')"><span class="material-icons">store</span> Relatório da Oficina</button>
+        <button class="nav-btn" onclick="showPage('page2')"><span class="material-icons">show_chart</span> Desempenho</button>
+        <button class="nav-btn" onclick="showPage('page3')"><span class="material-icons">list_alt</span> Detalhes</button>
+        <button class="nav-btn" onclick="showPage('page4')"><span class="material-icons">analytics</span> Demanda</button>
+        <button class="nav-btn" onclick="showPage('page5')"><span class="material-icons">inventory_2</span> Processos</button>
+        <button class="nav-btn" onclick="showPage('page6')"><span class="material-icons">calendar_month</span> Cronograma</button>
+        <button class="nav-btn" onclick="showPage('page7')"><span class="material-icons">checkroom</span> Fardamento Interno</button>
+        <button class="nav-btn" onclick="showPage('page8')"><span class="material-icons">badge</span> Fardamento Servidor</button>
+      </div>
+      <div class="mode-toggle">
+        <div class="toggle-btn" onclick="toggleDarkMode()">
+          <span class="material-icons" id="modeIcon">dark_mode</span><span id="modeText">Modo Escuro</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="main">
+      
+      <%- include('partials/main') %>
+
+      <div id="pageOficina" class="page">
+         <%- include('partials/oficina') %>
+      </div>
+
+      <div id="page5" class="page">
+         <%- include('partials/processos') %>
+      </div>
+
+      <div id="page6" class="page">
+         <h2>Cronograma de Entregas</h2>
+         <%- include('partials/cronograma') %>
+      </div>
+      
+      <div id="page7" class="page">
+         <%- include('partials/fardamento') %>
+      </div>
+      
+      <div id="page8" class="page">
+         <%- include('partials/fardamentoseap') %>
+      </div>
+
+    </div>
+
+    <!-- OVERLAY DE NOTIFICAÇÕES (SUB-TELA DA SEMANA) -->
+    <div class="notif-overlay" id="notifOverlay">
+        <div class="notif-box">
+            <div class="notif-header">
+                <h5><span class="material-icons">event</span> Entregas Pendentes da Semana</h5>
+                <button type="button" class="notif-close" onclick="closeNotifications()">&times;</button>
+            </div>
+            <div class="notif-body" id="notifBody">
+                <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                    <span class="material-icons" style="font-size: 40px; animation: spin 1s infinite linear;">refresh</span>
+                    <div style="margin-top: 10px;">Carregando demandas...</div>
+                </div>
+            </div>
+            <div class="notif-footer">
+                <button class="btn-notif btn-notif-sec" onclick="closeNotifications()">Fechar e voltar</button>
+                <button class="btn-notif btn-notif-pri" id="btnCopyNotif" onclick="copyWhatsAppText()"><i class="bi bi-whatsapp" style="font-size: 16px; margin-right: 6px;"></i> Copiar para WhatsApp</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- OVERLAY DO WHATSAPP (RELATÓRIOS DO DIÁRIO/OFICINA) -->
+    <div class="notif-overlay" id="whatsOverlay">
+        <div class="notif-box">
+            <div class="notif-header" style="background: #128C7E;">
+                <h5><i class="bi bi-whatsapp" style="margin-right: 8px;"></i> Pré-visualização do Relatório</h5>
+                <button type="button" class="notif-close" onclick="closeWhatsModal()">&times;</button>
+            </div>
+            <div class="notif-body">
+                <textarea id="whatsTextarea" style="width: 100%; height: 300px; border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-family: monospace; background: var(--bg-body); color: var(--text-main); resize: none;" readonly></textarea>
+            </div>
+            <div class="notif-footer">
+                <button class="btn-notif btn-notif-sec" onclick="closeWhatsModal()">Fechar</button>
+                <button class="btn-notif btn-notif-pri" id="btnCopyWhats" onclick="copyWhatsText()"><i class="bi bi-whatsapp" style="font-size: 16px; margin-right: 6px;"></i> Copiar Texto</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+      // DADOS INJETADOS DIRETAMENTE DO BACKEND NODE.JS
+      const INITIAL_DATA = <%- INITIAL_DATA %>;
+
+      (function() {
+        var checkExist = setInterval(function() {
+           if (typeof showPage === 'function') {
+              var originalShowPage = showPage;
+              showPage = function(pageId) {
+                 originalShowPage(pageId);
+                 if (pageId === 'page7' && typeof initFardamento === 'function') {
+                    initFardamento();
+                 } else if (pageId === 'page8' && typeof initFardamentoSeap === 'function') {
+                    initFardamentoSeap();
+                 }
+              };
+              clearInterval(checkExist);
+           }
+        }, 100);
+      })();
+
+      // Lógica do Modal de Pré-Visualização WhatsApp
+      function openWhatsModal(text) {
+          document.getElementById('whatsTextarea').value = text;
+          document.getElementById('whatsOverlay').style.display = 'flex';
+      }
+
+      function closeWhatsModal() {
+          document.getElementById('whatsOverlay').style.display = 'none';
+      }
+
+      function copyWhatsText() {
+          const text = document.getElementById('whatsTextarea').value;
+          navigator.clipboard.writeText(text).then(() => {
+              const btn = document.getElementById('btnCopyWhats');
+              const origHtml = btn.innerHTML;
+              
+              btn.innerHTML = '<i class="bi bi-check-lg" style="font-size: 16px; margin-right: 6px;"></i> Copiado!';
+              btn.classList.remove('btn-notif-pri');
+              btn.style.background = 'var(--surface)';
+              btn.style.color = '#4CAF50';
+              btn.style.border = '1px solid #4CAF50';
+              
+              setTimeout(() => {
+                  btn.innerHTML = origHtml;
+                  btn.classList.add('btn-notif-pri');
+                  btn.style = '';
+              }, 2500);
+          });
+      }
+    </script>
+
+  </body>
+</html>

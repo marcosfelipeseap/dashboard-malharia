@@ -1,0 +1,355 @@
+<style>
+  .fardamento-container { display: flex; flex-direction: column; gap: 20px; }
+  .fardamento-header { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 15px 25px; border-radius: 12px; box-shadow: var(--shadow); border: var(--card-border); flex-wrap: wrap; gap: 15px;}
+  .fardamento-title { font-size: 20px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+  
+  .filter-group { display: flex; flex-direction: column; gap: 4px; }
+  .filter-group label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+  .filter-group input, .filter-group select { padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-body); color: var(--text-main); font-size: 13px; outline: none; cursor: pointer; }
+  .filter-group input:focus, .filter-group select:focus { border-color: var(--primary); }
+
+  .highlight-total { background: var(--primary); color: #ffffff; padding: 25px 30px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 8px 20px rgba(0,0,0,0.15); margin-bottom: 25px; }
+  .highlight-total .ht-label { font-size: 16px; font-weight: 600; text-transform: uppercase; opacity: 0.9; letter-spacing: 0.5px; }
+  .highlight-total .ht-value { font-size: 42px; font-weight: 800; display: flex; align-items: baseline; gap: 8px; }
+  .highlight-total .ht-un { font-size: 18px; font-weight: 500; opacity: 0.8; }
+
+  .fardamento-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+  
+  .f-card { background: var(--surface); border: var(--card-border); border-radius: 12px; padding: 15px; box-shadow: var(--shadow); display: flex; flex-direction: column; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; }
+  .f-card:hover { transform: translateY(-3px); border-color: var(--primary); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
+  .f-card::after { content: 'Ver detalhes ➔'; position: absolute; bottom: 15px; right: 15px; font-size: 11px; font-weight: 600; color: var(--primary); opacity: 0; transition: 0.2s; }
+  .f-card:hover::after { opacity: 1; }
+
+  .f-card-header { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 5px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+  .f-card-val { font-size: 24px; font-weight: 700; color: var(--primary); }
+  .f-card-cor { font-size: 14px; color: var(--text-main); font-weight: 500; }
+  
+  .fardamento-list { background: var(--surface); border-radius: 12px; box-shadow: var(--shadow); border: var(--card-border); overflow: hidden; }
+  .f-table-header { display: grid; grid-template-columns: 100px 1fr 1fr 100px 1.5fr 1.5fr; background: var(--primary-light); padding: 12px 20px; font-weight: 600; font-size: 13px; color: var(--text-main); border-bottom: 1px solid var(--border); }
+  body.dark-mode .f-table-header { color: var(--text-main); }
+  
+  .f-table-row { display: grid; grid-template-columns: 100px 1fr 1fr 100px 1.5fr 1.5fr; padding: 12px 20px; font-size: 13px; border-bottom: 1px solid var(--border); transition: 0.2s; align-items: center; }
+  .f-table-row:hover { background: var(--bg-body); }
+  .f-table-row:last-child { border-bottom: none; }
+  
+  .f-empty { padding: 30px; text-align: center; color: var(--text-muted); font-style: italic; }
+
+  .btn-back { display: inline-flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-muted); transition: 0.2s; margin-bottom: 15px; }
+  .btn-back:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
+  
+  .fard-view { animation: fadeIn 0.3s ease; }
+
+  .destinos-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+  .dest-card { background: var(--bg-body); border: 1px solid var(--border); padding: 10px 15px; border-radius: 8px; display: flex; flex-direction: column; min-width: 130px; }
+  .dest-name { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dest-val { font-size: 18px; font-weight: 700; color: var(--text-main); }
+  
+  .checkbox-wrapper { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: var(--text-muted); font-weight: 500; height: 100%; padding-top: 16px; }
+  .checkbox-wrapper input { width: 16px; height: 16px; cursor: pointer; }
+</style>
+
+<div class="fardamento-container">
+  <div class="fardamento-header" id="fardHeader">
+    <div class="fardamento-title">
+      <span class="material-icons">checkroom</span> Fardamento Interno
+    </div>
+    
+    <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-start;">
+      <div class="filter-group">
+        <label>Início</label>
+        <input type="date" id="fardStart" onchange="renderFardamento()">
+      </div>
+      <div class="filter-group">
+        <label>Fim</label>
+        <input type="date" id="fardEnd" onchange="renderFardamento()">
+      </div>
+      
+      <div class="filter-group">
+        <label>Produto</label>
+        <select id="fardFilterTipo" onchange="renderFardamento()">
+          <option value="">Todos</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Cor</label>
+        <select id="fardFilterCor" onchange="renderFardamento()">
+          <option value="">Todas</option>
+        </select>
+      </div>
+
+      <label class="checkbox-wrapper">
+        <input type="checkbox" id="fardGroupByCor" checked onchange="renderFardamento()">
+        Diferenciar por Cor
+      </label>
+    </div>
+  </div>
+
+  <div id="fardMainView" class="fard-view">
+    
+    <div class="highlight-total">
+      <div>
+        <div class="ht-label">Total de Peças Entregues</div>
+        <div style="font-size: 13px; opacity: 0.8; margin-top: 5px;">Baseado nos filtros selecionados</div>
+      </div>
+      <div class="ht-value">
+        <span id="fardTotalGeralNum">0</span> 
+        <span class="ht-un">peças</span>
+      </div>
+    </div>
+
+    <h3 style="margin-bottom: 0;">Resumo por Tipo</h3>
+    <div id="fardamentoCards" class="fardamento-cards" style="margin-top: 15px;"></div>
+
+    <h3 style="margin-top: 30px; margin-bottom: 0;">Histórico Geral do Período</h3>
+    <div class="fardamento-list" style="margin-top: 15px;">
+      <div class="f-table-header">
+        <div>Data</div>
+        <div>Tipo</div>
+        <div>Cor</div>
+        <div>Qtd</div>
+        <div>Destino</div>
+        <div>Observação</div>
+      </div>
+      <div id="fardamentoTableBody"></div>
+    </div>
+  </div>
+
+  <div id="fardDetailView" class="fard-view" style="display: none;">
+    <button class="btn-back" onclick="closeFardamentoDetails()">
+      <span class="material-icons" style="font-size: 18px;">arrow_back</span> Voltar ao Resumo
+    </button>
+    
+    <div style="background: var(--surface); padding: 20px; border-radius: 12px; border: var(--card-border); box-shadow: var(--shadow); margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border); padding-bottom: 15px;">
+        <div>
+          <h2 id="fardDetailTitle" style="margin: 0; color: var(--primary);"></h2>
+          <div id="fardDetailSubtitle" style="font-size: 14px; color: var(--text-muted); margin-top: 5px;"></div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Total Entregue</div>
+          <div id="fardDetailTotal" style="font-size: 28px; font-weight: 700; color: var(--primary);"></div>
+        </div>
+      </div>
+      
+      <div style="margin-top: 15px;">
+        <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Subtotais por Destino</div>
+        <div id="fardDetailDestinos" class="destinos-container"></div>
+      </div>
+    </div>
+
+    <div class="fardamento-list">
+      <div class="f-table-header">
+        <div>Data</div>
+        <div>Tipo</div>
+        <div>Cor</div>
+        <div>Qtd</div>
+        <div>Destino</div>
+        <div>Observação</div>
+      </div>
+      <div id="fardamentoDetailTableBody"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let rawFardamento = [];
+  let currentPeriodData = []; 
+  let isFardamentoLoaded = false;
+
+  window.preloadFardamento = function(data) {
+    if(data.error) { console.error(data.error); return; }
+    
+    rawFardamento = data.map(r => {
+      let p = r.data.split('/');
+      return { ...r, dateObj: new Date(p[2], p[1]-1, p[0]) };
+    }).sort((a,b) => b.dateObj - a.dateObj); 
+    
+    isFardamentoLoaded = true;
+    populateFilters();
+    setupFardamentoDates();
+  };
+
+  function initFardamento() {
+    if (isFardamentoLoaded) {
+      closeFardamentoDetails(); 
+      renderFardamento();
+    }
+  }
+
+  function populateFilters() {
+    let tipos = [...new Set(rawFardamento.map(r => r.tipo).filter(Boolean))].sort();
+    let cores = [...new Set(rawFardamento.map(r => r.cor).filter(Boolean))].sort();
+
+    let selectTipo = document.getElementById('fardFilterTipo');
+    let selectCor = document.getElementById('fardFilterCor');
+
+    selectTipo.innerHTML = '<option value="">Todos</option>';
+    selectCor.innerHTML = '<option value="">Todas</option>';
+
+    tipos.forEach(t => { selectTipo.innerHTML += `<option value="${t}">${t}</option>`; });
+    cores.forEach(c => { selectCor.innerHTML += `<option value="${c}">${c}</option>`; });
+  }
+
+  function setupFardamentoDates() {
+    let now = new Date();
+    let firstDay = new Date(now.getFullYear(), 0, 1); 
+    
+    let toISO = d => {
+      let m = String(d.getMonth() + 1).padStart(2, '0');
+      let day = String(d.getDate()).padStart(2, '0');
+      return `${d.getFullYear()}-${m}-${day}`;
+    };
+    
+    document.getElementById('fardStart').value = toISO(firstDay);
+    document.getElementById('fardEnd').value = toISO(now);
+  }
+
+  function renderFardamento() {
+    closeFardamentoDetails();
+
+    let startVal = document.getElementById('fardStart').value;
+    let endVal = document.getElementById('fardEnd').value;
+    let filterTipo = document.getElementById('fardFilterTipo').value;
+    let filterCor = document.getElementById('fardFilterCor').value;
+    let differentiateColor = document.getElementById('fardGroupByCor').checked;
+    
+    if(!startVal || !endVal) return;
+    
+    let sParts = startVal.split('-');
+    let eParts = endVal.split('-');
+    
+    let start = new Date(sParts[0], sParts[1]-1, sParts[2]);
+    let end = new Date(eParts[0], eParts[1]-1, eParts[2], 23, 59, 59); 
+
+    currentPeriodData = rawFardamento.filter(r => {
+      let inDate = r.dateObj >= start && r.dateObj <= end;
+      let matchTipo = filterTipo === "" || r.tipo === filterTipo;
+      let matchCor = filterCor === "" || r.cor === filterCor;
+      return inDate && matchTipo && matchCor;
+    });
+
+    let cardsCont = document.getElementById('fardamentoCards');
+    let tableCont = document.getElementById('fardamentoTableBody');
+    let totalElement = document.getElementById('fardTotalGeralNum'); 
+    
+    cardsCont.innerHTML = '';
+    tableCont.innerHTML = '';
+
+    let totalGeralNoPeriodo = currentPeriodData.reduce((acc, curr) => acc + curr.quantidade, 0);
+    totalElement.innerText = totalGeralNoPeriodo;
+
+    if (currentPeriodData.length === 0) {
+      cardsCont.innerHTML = '<div style="color:var(--text-muted)">Sem entregas registradas para estes filtros.</div>';
+      tableCont.innerHTML = '<div class="f-empty">Nenhum registro encontrado.</div>';
+      return;
+    }
+
+    let groups = {};
+    currentPeriodData.forEach(r => {
+      let key = differentiateColor ? `${r.tipo} - ${r.cor}` : `${r.tipo}`;
+      
+      if (!groups[key]) {
+        groups[key] = { 
+          tipo: r.tipo, 
+          cor: differentiateColor ? r.cor : 'Todas as Cores', 
+          qtd: 0,
+          filtroCor: differentiateColor ? r.cor : null 
+        };
+      }
+      groups[key].qtd += r.quantidade;
+    });
+
+    Object.values(groups).sort((a,b) => b.qtd - a.qtd).forEach(g => {
+      let card = document.createElement('div');
+      card.className = 'f-card';
+      card.onclick = () => showFardamentoDetails(g.tipo, g.filtroCor, g.qtd);
+      card.innerHTML = `
+        <div class="f-card-header">${g.tipo}</div>
+        <div class="f-card-cor">Cor: <span style="font-weight:700">${g.cor}</span></div>
+        <div style="margin-top: 10px;">
+            <span class="f-card-val">${g.qtd}</span> <span style="font-size:12px; color:var(--text-muted)">un.</span>
+        </div>
+      `;
+      cardsCont.appendChild(card);
+    });
+
+    let tableHtml = '';
+    currentPeriodData.forEach(r => {
+      tableHtml += `
+        <div class="f-table-row">
+          <div style="font-weight:600">${r.data}</div>
+          <div>${r.tipo}</div>
+          <div>${r.cor}</div>
+          <div style="font-weight:700; color:var(--primary)">${r.quantidade}</div>
+          <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.destino}">${r.destino || '-'}</div>
+          <div style="font-size:12px; color:var(--text-muted)">${r.observacao || '-'}</div>
+        </div>
+      `;
+    });
+    tableCont.innerHTML = tableHtml;
+  }
+
+  function showFardamentoDetails(tipo, cor, totalQtd) {
+    document.getElementById('fardMainView').style.display = 'none';
+    document.getElementById('fardDetailView').style.display = 'block';
+
+    document.getElementById('fardDetailTitle').innerText = tipo;
+    
+    if(cor) {
+      document.getElementById('fardDetailSubtitle').innerHTML = `Variação de Cor: <b>${cor}</b>`;
+    } else {
+      document.getElementById('fardDetailSubtitle').innerHTML = `<b>Todas as Cores</b> agrupadas`;
+    }
+    
+    document.getElementById('fardDetailTotal').innerText = `${totalQtd} un.`;
+
+    let detailData = currentPeriodData.filter(r => {
+      if(cor) return r.tipo === tipo && r.cor === cor;
+      return r.tipo === tipo;
+    });
+    
+    let destinosGrp = {};
+    detailData.forEach(r => {
+      let dName = r.destino ? r.destino.trim() : 'NÃO INFORMADO';
+      if(dName === '') dName = 'NÃO INFORMADO';
+      if(!destinosGrp[dName]) destinosGrp[dName] = 0;
+      destinosGrp[dName] += r.quantidade;
+    });
+
+    let destCont = document.getElementById('fardDetailDestinos');
+    destCont.innerHTML = '';
+    
+    Object.keys(destinosGrp).sort((a,b) => destinosGrp[b] - destinosGrp[a]).forEach(destName => {
+      let div = document.createElement('div');
+      div.className = 'dest-card';
+      div.innerHTML = `
+        <div class="dest-name" title="${destName}">${destName}</div>
+        <div class="dest-val">${destinosGrp[destName]} <span style="font-size: 11px; font-weight: normal; color: var(--text-muted);">un</span></div>
+      `;
+      destCont.appendChild(div);
+    });
+
+    let tableCont = document.getElementById('fardamentoDetailTableBody');
+    let tableHtml = '';
+
+    detailData.forEach(r => {
+      tableHtml += `
+        <div class="f-table-row">
+          <div style="font-weight:600">${r.data}</div>
+          <div>${r.tipo}</div>
+          <div>${r.cor}</div>
+          <div style="font-weight:700; color:var(--primary)">${r.quantidade}</div>
+          <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.destino}">${r.destino || '-'}</div>
+          <div style="font-size:12px; color:var(--text-muted)">${r.observacao || '-'}</div>
+        </div>
+      `;
+    });
+    tableCont.innerHTML = tableHtml;
+  }
+
+  function closeFardamentoDetails() {
+    document.getElementById('fardDetailView').style.display = 'none';
+    document.getElementById('fardMainView').style.display = 'block';
+  }
+</script>

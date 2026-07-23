@@ -1,0 +1,1363 @@
+<div id="customModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <h3 id="modalTitle" style="margin-top:0; color:var(--primary)"></h3>
+    <div id="modalList"></div>
+  </div>
+</div>
+
+<div id="loading">
+  <span class="material-icons" style="font-size:40px; animation:spin 1s infinite linear; margin-bottom:15px">refresh</span>
+  <p>Carregando Painel...</p>
+</div>
+
+<div id="topBarGlobal" class="top-bar">
+  <div class="filters-row">
+    <div style="font-weight:700; color:var(--primary); display:flex; align-items:center; gap:5px; margin-right: 15px;">
+      <span class="material-icons">filter_list</span> FILTROS
+    </div>
+    <div class="filter-group"><label>Início</label><input type="date" id="globalStart" onchange="updateAll()"></div>
+    <div class="filter-group"><label>Fim</label><input type="date" id="globalEnd" onchange="updateAll()"></div>
+    <!-- Botão de Refresh Novo Adicionado -->
+    <div class="filter-group" style="margin-left: auto;">
+      <button class="btn-notif btn-notif-sec" onclick="refreshDashboard()" style="padding: 6px 12px; font-size: 12px;">
+        <span class="material-icons" style="font-size:16px; margin-right: 5px;">sync</span> Atualizar Dados
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="infoTextGlobal" class="info-text">
+  <span class="material-icons" style="font-size:14px">info</span>
+  Exibindo dados dos últimos 3 meses por padrão. Altere as datas acima para ver histórico antigo.
+</div>
+
+<div id="page1" class="page active">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap: wrap; gap: 10px;">
+    <h2 id="page1Title" style="margin-bottom:0;">Diário de Produção</h2>
+    <div style="display:flex; gap: 15px; align-items:flex-end; flex-wrap: wrap;">
+      <button class="btn-notif btn-notif-pri" onclick="generateDiarioRelatorio()" style="padding: 8px 15px; font-size: 13px; height: 37px;"><i class="bi bi-whatsapp" style="margin-right: 5px;"></i> Relatório</button>
+      <div class="filter-group"><label>Dia</label><input type="date" id="dailyDate" onchange="renderPage1()"></div>
+    </div>
+  </div>
+  <div id="dailySummary" class="p1-summary-row"></div>
+  <div id="dailyCards" class="cards-grid"></div>
+</div>
+
+<div id="page2" class="page">
+  <h2>Desempenho (Meta x Produção)</h2>
+  <p style="font-size:13px; color:var(--text-muted)">Clique nas oficinas para visualizar.</p>
+  <div id="oficinaChips" class="chip-container"></div>
+  <div id="chartsArea"></div>
+</div>
+
+<div id="page3" class="page">
+  <h2>Histórico Detalhado</h2>
+
+  <div class="ranking-container">
+      <div class="ranking-header">
+          <div class="ranking-title">Ranking de Performance</div>
+          <div class="ranking-period" id="rankingPeriodDisplay"></div>
+      </div>
+      <div id="rankingList" class="rank-list"></div>
+  </div>
+
+  <div class="ranking-container" style="margin-top: 20px;">
+      <div class="ranking-header">
+          <div class="ranking-title">Ranking de Malharia Sem Relatório</div>
+      </div>
+      <div id="rankingMissingList" class="rank-list"></div>
+  </div>
+
+  <div class="legend-highlight" style="margin-top: 20px;">
+      <span class="material-icons" style="font-size:18px">warning_amber</span>
+      <span>SR = Quantidade de dias que o relatório não foi enviado (Sem Relatório). S/I = Sem Insumo (E produção zero).</span>
+  </div>
+  <div id="chartDetailsContainer" class="chart-card" style="margin-bottom:20px; height:400px">
+      <canvas id="chartDetails"></canvas>
+  </div>
+  <div id="detailedList"></div>
+</div>
+
+<div id="page4" class="page">
+  <h2>Produção por Demanda</h2>
+  <div class="selection-panel">
+    <div>
+      <div class="filter-group" style="margin-bottom:20px; position:relative;">
+        <label>Demanda</label>
+        
+        <div class="custom-dropdown" id="demandaDropdown">
+            <div class="custom-dropdown-btn" onclick="toggleDemandaDropdown()">
+              <span id="demandaSelectedText" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; max-width:210px;">Carregando...</span>
+              <span class="material-icons" style="font-size:18px">arrow_drop_down</span>
+            </div>
+            <div class="custom-dropdown-content" id="demandaDropdownContent">
+              <div class="custom-dropdown-search">
+                  <input type="text" id="demandaSearchInput" placeholder="Pesquisar demanda..." onkeyup="filterDemandaOptions(event)" onclick="event.stopPropagation()">
+              </div>
+              <div class="custom-options-wrapper" id="demandaOptionsContainer"></div>
+            </div>
+        </div>
+        <select id="p4Demanda" style="display:none;"></select>
+        
+      </div>
+      
+      <div class="filter-group">
+        <label>Peças</label>
+        <input type="text" id="p4SearchPecas" class="search-input" placeholder="Pesquisar peça..." onkeyup="filterP4Pecas()">
+      </div>
+      <div id="p4PecasContainer" class="panel-list"></div>
+    </div>
+    <div style="display:flex; flex-direction:column;">
+      <div id="p4Summary" class="summary-bar"></div>
+      <div class="panel-list" style="flex:1; height:auto; display:flex; flex-direction:column;">
+          
+          <div style="flex:1; min-height: 300px; display:flex; align-items:center; justify-content:center;">
+              <canvas id="chartDemanda"></canvas>
+          </div>
+          
+          <div id="p4OficinasBreakdown" style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px;"></div>
+          
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  Chart.register(ChartDataLabels);
+  let rawData = [];
+  let activeCharts = [];
+  let chartDemandaInst = null;
+  let chartDetailsInst = null; 
+  let selectedOficinas = [];
+  let globalDemandas = []; 
+  const daysOfWeek = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  
+  window.hasShownNotif = false;
+
+  function isSemInsumo(just) {
+      if (!just) return false;
+      let txt = just.toLowerCase();
+      return txt.includes('insumo') && (txt.includes('sem') || txt.includes('falta'));
+  }
+
+  function normalizeDemandaStr(str) {
+      if(!str) return "";
+      let s = str.toLowerCase().trim();
+      s = s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      s = s.replace(/\s+/g, ' ');
+      let words = s.split(' ').map(w => {
+          if(w.length > 3) {
+              if(w.endsWith('oes') || w.endsWith('aes')) return w.slice(0, -3) + 'ao';
+              if(w.endsWith('ais')) return w.slice(0, -2) + 'al';
+              if(w.endsWith('eis')) return w.slice(0, -2) + 'el';
+              if(w.endsWith('ois')) return w.slice(0, -2) + 'ol';
+              if(w.endsWith('uis')) return w.slice(0, -2) + 'ul';
+              if(w.endsWith('res') || w.endsWith('zes')) return w.slice(0, -2);
+              if(w.endsWith('s')) return w.slice(0, -1);
+          }
+          return w;
+      });
+      return words.join(' ');
+  }
+
+  function isDateWeekend(dateStr) {
+      if (!dateStr) return false;
+      let p = dateStr.split('/');
+      if (p.length !== 3) return false;
+      let day = new Date(p[2], p[1]-1, p[0]).getDay();
+      return day === 0 || day === 6;
+  }
+
+  function calculateDynamicMeta(dayRecords) {
+      if (!dayRecords || dayRecords.length === 0) return 0;
+      if (dayRecords.length === 1) return dayRecords[0].metaOficina || 0;
+      let maxMeta = Math.max(...dayRecords.map(r => r.metaOficina || 0));
+      let effectiveMetas = dayRecords.map(r => {
+          let m = r.metaOficina || 0;
+          return m === 0 ? maxMeta : m;
+      });
+      let maxProd = -1;
+      let metaDoMaisProduzido = 0;
+      let reached25 = false;
+
+      dayRecords.forEach((r, idx) => {
+          let m = effectiveMetas[idx];
+          if (r.producaoDia > maxProd) {
+              maxProd = r.producaoDia;
+              metaDoMaisProduzido = m;
+          }
+          if (r.producaoDia >= (0.25 * m)) {
+              reached25 = true;
+          }
+      });
+      if (reached25) {
+          let sum = effectiveMetas.reduce((a, b) => a + b, 0);
+          return Math.round(sum / effectiveMetas.length);
+      } else {
+          return metaDoMaisProduzido;
+      }
+  }
+
+  // =========================================================
+  // NODE.JS: LEITURA IMEDIATA DA VARIÁVEL INJETADA PELO EJS
+  // =========================================================
+  window.onload = async function() {
+    document.getElementById('loading').style.display = 'flex';
+    
+    try {
+        let data = INITIAL_DATA; // Puxado do index.ejs
+        
+        // Verifica se é uma recarga forçada via URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('refresh') === 'true') {
+            const res = await fetch('/api/data');
+            data = await res.json();
+            // Remove o parâmetro refresh da URL para não ficar em loop ao recarregar a página normalmente
+            window.history.replaceState({}, document.title, "/");
+        }
+
+        if (data.error) throw new Error(data.error);
+
+        let sheetData = data.sheetData;
+        window.globalScheduleData = data.scheduleData;
+        window.globalProcessData = data.processData;
+        window.globalFardData = data.fardData;
+        window.globalFardSeapData = data.fardSeapData;
+        window.infoOficinasEstatico = data.oficinasData;
+
+        // Inicializa todos os subsistemas
+        init(sheetData);
+        buildNotifications(window.globalScheduleData);
+        
+        if (typeof initOficinaData === 'function') initOficinaData();
+        if (typeof initProcesses === 'function') initProcesses(window.globalProcessData);
+        if (typeof preloadFardamento === 'function') preloadFardamento(window.globalFardData);
+        if (typeof preloadFardamentoSeap === 'function') preloadFardamentoSeap(window.globalFardSeapData);
+        
+        document.getElementById('loading').style.display = 'none';
+        
+        if (!window.hasShownNotif) {
+            openNotifications();
+            window.hasShownNotif = true;
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Erro ao processar dados do painel: " + err.message);
+        document.getElementById('loading').style.display = 'none';
+    }
+  };
+
+  // Função para o botão de refresh manual
+  window.refreshDashboard = function() {
+      window.location.href = '/?refresh=true';
+  };
+
+  function init(data) {
+    if(data.error) { return; } 
+
+    let demandaMap = {};
+
+    let mappedData = data.map(r => {
+      let p = r.data.split('/');
+      let dateObj = new Date(p[2], p[1]-1, p[0]);
+      let normItem = normalizeDemandaStr(r.item);
+      
+      if (!demandaMap[normItem] && r.item) {
+          demandaMap[normItem] = r.item;
+      }
+      
+      return { ...r, dateObj: dateObj, normItem: normItem };
+    });
+
+    rawData = mappedData.map(r => {
+        if (r.normItem && demandaMap[r.normItem]) {
+            r.item = demandaMap[r.normItem]; 
+        }
+        return r;
+    }).sort((a,b) => a.dateObj - b.dateObj);
+
+    let times = rawData.map(r => r.dateObj.getTime());
+    let maxDate = new Date(Math.max(...times));
+    let threeMonthsAgo = new Date(maxDate);
+    threeMonthsAgo.setMonth(maxDate.getMonth() - 3);
+    let toISO = d => d.toISOString().split('T')[0];
+    
+    document.getElementById('globalStart').value = toISO(threeMonthsAgo);
+    document.getElementById('globalEnd').value = toISO(maxDate);
+    document.getElementById('dailyDate').value = toISO(maxDate);
+
+    setupChips();
+    setupDemanda(); 
+    renderPage1();
+  }
+
+  // --- LÓGICA DAS NOTIFICAÇÕES (MENU SANFONA E AGRUPAMENTO) ---
+  function getStartAndEndOfWeek() {
+      let today = new Date();
+      today.setHours(0, 0, 0, 0);
+      let dayOfWeek = today.getDay(); 
+      let start = new Date(today.getTime());
+      start.setDate(today.getDate() - dayOfWeek); 
+      let end = new Date(today.getTime());
+      end.setDate(today.getDate() + (6 - dayOfWeek)); 
+      end.setHours(23, 59, 59, 999);
+      
+      return { start, end };
+  }
+
+  function buildNotifications(scheduleGroups) {
+      if(scheduleGroups.error) {
+          console.error("Erro ao carregar notificações: ", scheduleGroups.error);
+          return;
+      }
+
+      const diasSemana = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+      let { start, end } = getStartAndEndOfWeek();
+
+      let pendingThisWeek = scheduleGroups.filter(g => {
+          if(g.totalPendente <= 0) return false;
+          if(!g.prazo) return false;
+          let dParts = g.prazo.split('/');
+          if(dParts.length !== 3) return false;
+          
+          let prevDate = new Date(dParts[2], dParts[1]-1, dParts[0], 12, 0, 0);
+          g._parsedDate = prevDate;
+          g._nomeDia = diasSemana[prevDate.getDay()];
+
+          return prevDate >= start && prevDate <= end;
+      });
+
+      pendingThisWeek.sort((a,b) => a._parsedDate - b._parsedDate);
+
+      let notifHtml = '';
+      let whatsappText = '*⚠️ ENTREGAS PENDENTES DA SEMANA* 📅\n\n';
+
+      if(pendingThisWeek.length === 0) {
+          notifHtml = '<div style="text-align: center; padding: 30px; color: var(--text-muted);"><span class="material-icons" style="font-size: 48px; color: #4CAF50; display: block; margin-bottom: 15px;">check_circle</span>Nenhuma entrega pendente para esta semana! 🎉</div>';
+          whatsappText += 'Nenhuma entrega pendente para esta semana! 🎉';
+          document.getElementById('notifBadge').style.display = 'none';
+      } else {
+          let processGroupsSet = new Set(pendingThisWeek.map(i => i.nProcesso));
+          let badge = document.getElementById('notifBadge');
+          badge.innerText = processGroupsSet.size;
+          badge.style.display = 'block';
+
+          let collapseCounter = 0;
+
+          pendingThisWeek.forEach(g => {
+              let collapseId = "notif_col_" + collapseCounter;
+              collapseCounter++;
+              
+              let sumUI = {};
+              g.items.forEach(i => {
+                  let nomeMob = i.produto.trim().toUpperCase();
+                  if(!sumUI[nomeMob]) sumUI[nomeMob] = 0;
+                  sumUI[nomeMob] += i.qtdPendente;
+              });
+              
+              let uiItemsHtml = Object.keys(sumUI).map(nome => {
+                  return `<li><span style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%;">${nome}</span> <span class="badge-warning">${sumUI[nome]} pendentes</span></li>`;
+              }).join('');
+              
+              let prevFormatada = `${g.prazo} (${g._nomeDia})`;
+
+              notifHtml += `
+              <div class="notif-item">
+                  <div class="notif-item-header" onclick="toggleAccordion(this)">
+                      <div class="header-row-1">
+                          <strong style="color:var(--primary); font-size: 15px;">${g.orgao}</strong>
+                          <span class="material-icons">expand_more</span>
+                      </div>
+                      <div class="header-row-2">
+                          <span>Processo: <strong>${g.nProcesso || 'N/A'}</strong></span>
+                          <span class="badge-danger"><span class="material-icons" style="font-size: 12px; vertical-align: middle; margin-right: 3px;">event</span> ${prevFormatada}</span>
+                      </div>
+                  </div>
+                  <div class="notif-item-body">
+                      <ul class="notif-item-list">
+                          ${uiItemsHtml}
+                      </ul>
+                  </div>
+              </div>`;
+
+              whatsappText += `🏢 *Órgão:* ${g.orgao}\n`;
+              whatsappText += `📄 *Processo:* ${g.nProcesso || 'N/A'}\n`;
+              whatsappText += `🗓 *Previsão:* ${prevFormatada}\n`;
+              whatsappText += `*Itens Pendentes:*\n`;
+              Object.keys(sumUI).forEach(nome => {
+                  whatsappText += `- ${sumUI[nome]}x ${nome}\n`;
+              });
+              whatsappText += `\n------------------------\n\n`;
+          });
+      }
+
+      document.getElementById('notifBody').innerHTML = notifHtml;
+      document.getElementById('btnCopyNotif').setAttribute('data-text', whatsappText);
+  }
+
+  function toggleAccordion(headerEl) {
+      headerEl.classList.toggle('expanded');
+      let bodyEl = headerEl.nextElementSibling;
+      bodyEl.classList.toggle('show');
+  }
+
+  function openNotifications() { document.getElementById('notifOverlay').style.display = 'flex'; }
+  function closeNotifications() { document.getElementById('notifOverlay').style.display = 'none'; }
+
+  function copyWhatsAppText() {
+      const text = document.getElementById('btnCopyNotif').getAttribute('data-text');
+      navigator.clipboard.writeText(text).then(() => {
+          const btn = document.getElementById('btnCopyNotif');
+          const origHtml = btn.innerHTML;
+          btn.innerHTML = '<i class="bi bi-check-lg" style="font-size: 16px; margin-right: 6px;"></i> Copiado!';
+          btn.classList.remove('btn-notif-pri');
+          btn.style.background = 'var(--surface)';
+          btn.style.color = '#4CAF50';
+          btn.style.border = '1px solid #4CAF50';
+          setTimeout(() => {
+              btn.innerHTML = origHtml;
+              btn.classList.add('btn-notif-pri');
+              btn.style = '';
+          }, 2500);
+      });
+  }
+
+  function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    let isDark = document.body.classList.contains('dark-mode');
+    document.getElementById('modeIcon').innerText = isDark ? 'light_mode' : 'dark_mode';
+    document.getElementById('modeText').innerText = isDark ? 'Modo Claro' : 'Modo Escuro';
+    updateAll(); 
+  }
+  
+  function getThemeColor(variable) {
+    return getComputedStyle(document.body).getPropertyValue(variable).trim();
+  }
+
+  function showPage(pid) {
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById(pid).classList.add('active');
+    event.currentTarget.classList.add('active');
+    
+    if(pid === 'page5' || pid === 'page6' || pid === 'page7' || pid === 'page8') {
+        document.getElementById('topBarGlobal').style.display = 'none';
+        document.getElementById('infoTextGlobal').style.display = 'none';
+    } else {
+        document.getElementById('topBarGlobal').style.display = 'block';
+        document.getElementById('infoTextGlobal').style.display = 'flex';
+    }
+
+    if(pid === 'page1') renderPage1();
+    if(pid === 'pageOficina' && typeof renderPageOficina === 'function') renderPageOficina();
+    if(pid === 'page2') renderPage2();
+    if(pid === 'page3') renderPage3();
+    if(pid === 'page4') renderPage4();
+    if(pid === 'page5' && typeof renderPage5 === 'function') renderPage5();
+    if(pid === 'page6' && typeof initCronograma === 'function') initCronograma();
+    if(pid === 'page7' && typeof initFardamento === 'function') initFardamento();
+    if(pid === 'page8' && typeof initFardamentoSeap === 'function') initFardamentoSeap();
+  }
+
+  function updateAll() {
+    setupChips();
+    let active = document.querySelector('.page.active').id;
+    if(active !== 'page1' && active !== 'page5' && active !== 'page6' && active !== 'page7' && active !== 'page8') {
+        let functionName = active.replace('page', 'renderPage');
+        if (typeof window[functionName] === 'function') window[functionName]();
+    }
+    if(active === 'page5' && typeof renderPage5 === 'function') renderPage5();
+    if(active === 'page6' && typeof initCronograma === 'function') initCronograma();
+    if(active === 'page7' && typeof initFardamento === 'function') renderFardamento();
+    if(active === 'page8' && typeof initFardamentoSeap === 'function') renderFardamentoSeap();
+  }
+
+  function openModal(title, items, isHtml = false) {
+    document.getElementById('modalTitle').innerText = title;
+    let list = document.getElementById('modalList');
+    list.innerHTML = '';
+    if(items.length === 0) {
+        list.innerHTML = '<div style="color:var(--text-muted); font-style:italic">Nenhum dia encontrado.</div>';
+    } else {
+        items.forEach(i => {
+            let div = document.createElement('div');
+            div.className = 'modal-item';
+            div.style.marginBottom = '6px';
+            if (isHtml) div.innerHTML = i;
+            else div.innerText = i;
+            list.appendChild(div);
+        });
+    }
+    document.getElementById('customModal').style.display = 'block';
+  }
+
+  function closeModal() { document.getElementById('customModal').style.display = 'none'; }
+  window.onclick = function(event) { if (event.target == document.getElementById('customModal')) closeModal(); }
+
+  function wrapText(str, maxChars) {
+    if(!str) return [];
+    let words = str.split(' ');
+    let lines = [];
+    let currentLine = words[0];
+    for (let i = 1; i < words.length; i++) {
+        if (currentLine.length + 1 + words[i].length <= maxChars) {
+            currentLine += ' ' + words[i];
+        } else {
+            lines.push(currentLine);
+            currentLine = words[i];
+        }
+    }
+    lines.push(currentLine);
+    return lines;
+  }
+
+  function getFilterDates() {
+    let sVal = document.getElementById('globalStart').value;
+    let eVal = document.getElementById('globalEnd').value;
+    if(!sVal || !eVal) return { start: new Date(0), end: new Date(0) };
+    let sParts = sVal.split('-');
+    let eParts = eVal.split('-');
+    let start = new Date(sParts[0], sParts[1]-1, sParts[2]);
+    let end = new Date(eParts[0], eParts[1]-1, eParts[2]);
+    return { start, end };
+  }
+
+  function getMissingBusinessDays(oficina, filterStart, filterEnd, dataRecords) {
+      let oficinaRecords = dataRecords.filter(r => r.oficina === oficina);
+      if (oficinaRecords.length === 0) return []; 
+      let minRecordDate = oficinaRecords[0].dateObj; 
+      let maxRecordDate = oficinaRecords[oficinaRecords.length - 1].dateObj;
+      let startCounting = new Date(Math.max(filterStart.getTime(), minRecordDate.getTime()));
+      let endCounting = filterEnd;
+      if (oficina === "GALPÃO 3.1" || oficina === "GALPÃO 3.2") {
+          endCounting = new Date(Math.min(filterEnd.getTime(), maxRecordDate.getTime()));
+      }
+      let missing = [];
+      let curr = new Date(startCounting);
+      let existingDates = new Set(oficinaRecords.map(r => r.data));
+      while (curr <= endCounting) {
+          let dayOfWeek = curr.getDay();
+          if (dayOfWeek !== 0 && dayOfWeek !== 6) { 
+              let d = String(curr.getDate()).padStart(2, '0');
+              let m = String(curr.getMonth() + 1).padStart(2, '0');
+              let y = curr.getFullYear();
+              let dateStr = `${d}/${m}/${y}`;
+              if (!existingDates.has(dateStr)) missing.push(`${dateStr} (${daysOfWeek[dayOfWeek]})`);
+          }
+          curr.setDate(curr.getDate() + 1);
+      }
+      return missing;
+  }
+
+  function openMissingDetailsModal(oficina, datesStrArr) {
+      if (!datesStrArr || datesStrArr.length === 0) return;
+      let parseDateStr = (str) => {
+          let p = str.split(' ')[0].split('/');
+          return new Date(p[2], p[1]-1, p[0]);
+      };
+      let streaks = [];
+      let currentStreak = [datesStrArr[0]];
+      for(let i=1; i<datesStrArr.length; i++) {
+          let d1 = parseDateStr(datesStrArr[i-1]);
+          let d2 = parseDateStr(datesStrArr[i]);
+          let diffTime = Math.abs(d2 - d1);
+          let diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+          if (diffDays === 1 || (diffDays === 3 && d1.getDay() === 5 && d2.getDay() === 1)) {
+              currentStreak.push(datesStrArr[i]);
+          } else {
+              streaks.push(currentStreak);
+              currentStreak = [datesStrArr[i]];
+          }
+      }
+      streaks.push(currentStreak);
+
+      let formattedItems = [];
+      streaks.forEach(streak => {
+          if(streak.length === 1) {
+              formattedItems.push(`
+                  <div style="margin-bottom: 8px; border-left: 3px solid var(--neutral-text); padding-left: 10px;">
+                      <div style="font-weight: 600; color: var(--text-main);">Dia isolado</div>
+                      <div style="font-size: 13px; color: var(--text-muted);">${streak[0]}</div>
+                  </div>
+              `);
+          } else {
+              let start = streak[0].split(' ')[0];
+              let end = streak[streak.length - 1].split(' ')[0];
+              let daysList = streak.map(s => s.split(' ')[0]).join(', ');
+              formattedItems.push(`
+                  <div style="margin-bottom: 8px; border-left: 3px solid var(--danger-text); padding-left: 10px;">
+                      <div style="font-weight: 600; color: var(--text-main);">Período consecutivo: ${streak.length} dias</div>
+                      <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 4px;">De <b>${start}</b> até <b>${end}</b></div>
+                      <div style="font-size: 12px; color: var(--text-muted); background: var(--bg-body); padding: 4px; border-radius: 4px;">Dias: ${daysList}</div>
+                  </div>
+              `);
+          }
+      });
+      openModal(`Detalhamento Sem Relatório - ${oficina}`, formattedItems, true);
+  }
+
+  function getColorForPercentage(perc) {
+      if (perc >= 70) {
+          let factor = (perc - 70) / (100 - 70); 
+          return interpolate( {r:56,g:142,b:60}, {r:76,g:175,b:80}, factor );
+      } else if (perc >= 40) {
+          let factor = (perc - 40) / (69 - 40);
+          return interpolate( {r:251,g:192,b:45}, {r:255,g:238,b:88}, factor );
+      } else {
+          let factor = perc / 39;
+          return interpolate( {r:183,g:28,b:28}, {r:239,g:83,b:80}, factor );
+      }
+  }
+
+  function interpolate(c1, c2, factor) {
+      let r = Math.round(c1.r + factor * (c2.r - c1.r));
+      let g = Math.round(c1.g + factor * (c2.g - c1.g));
+      let b = Math.round(c1.b + factor * (c2.b - c1.b));
+      return `rgb(${r}, ${g}, ${b})`;
+  }
+
+  // --- FUNÇÃO PARA GERAR RELATÓRIO DO DIÁRIO PARA O WHATSAPP ---
+  function generateDiarioRelatorio() {
+      let val = document.getElementById('dailyDate').value;
+      if(!val) return;
+      let sDate = val.split('-').reverse().join('/');
+      let data = rawData.filter(r => r.data === sDate);
+      
+      let allOficinas = [...new Set(rawData.map(r => r.oficina))].sort();
+      let groups = {};
+      data.forEach(r => {
+        if(!groups[r.oficina]) groups[r.oficina] = { prod:0, justs:[], items:[] };
+        groups[r.oficina].prod += r.producaoDia;
+        if(r.justificativa) groups[r.oficina].justs.push(r.justificativa);
+        groups[r.oficina].items.push(r);
+      });
+
+      let listOk = []; let listFail = []; let listInsumo = []; let listMissing = [];
+
+      Object.keys(groups).forEach(of => {
+          let g = groups[of];
+          let validItems = g.items.filter(r => !(r.producaoDia === 0 && isSemInsumo(r.justificativa)));
+          g.meta = validItems.length > 0 ? calculateDynamicMeta(validItems) : 0;
+          let hasInsumoIssue = g.justs.some(j => isSemInsumo(j));
+
+          if (g.prod > 0 && g.prod >= g.meta) listOk.push(of);
+          else if (g.prod === 0 && hasInsumoIssue) listInsumo.push(of); 
+          else listFail.push(of);
+      });
+
+      let selDateObj = new Date(val.split('-')[0], val.split('-')[1]-1, val.split('-')[2]);
+      let isWeekendDay = selDateObj.getDay() === 0 || selDateObj.getDay() === 6;
+
+      let presentOficinas = Object.keys(groups);
+      let maxDates = {};
+      rawData.forEach(r => {
+          if (!maxDates[r.oficina] || r.dateObj > maxDates[r.oficina]) maxDates[r.oficina] = r.dateObj;
+      });
+
+      if (isWeekendDay) {
+          listMissing = []; 
+      } else {
+          listMissing = allOficinas.filter(of => {
+              if (presentOficinas.includes(of)) return false;
+              if ((of === "GALPÃO 3.1" || of === "GALPÃO 3.2") && selDateObj > maxDates[of]) return false;
+              return true;
+          });
+      }
+
+      listOk.sort(); listInsumo.sort(); listFail.sort(); listMissing.sort();
+
+      let text = `*📊 DIÁRIO DE PRODUÇÃO - ${sDate}*\n`;
+      if(isWeekendDay) text += `*(Fim de Semana)*\n`;
+      text += `\n*Resumo:*\n`;
+      text += `✅ Satisfatório: ${listOk.length}\n`;
+      text += `⚠️ Sem Insumo: ${listInsumo.length}\n`;
+      text += `❌ Insuficiente: ${listFail.length}\n`;
+      text += `⚪ Não Informado: ${listMissing.length}\n\n`;
+      text += `*--- DETALHAMENTO ---*\n\n`;
+
+      let presentSorted = [...listOk, ...listInsumo, ...listFail];
+      presentSorted.forEach(of => {
+        let g = groups[of];
+        let bateu = g.prod > 0 && g.prod >= g.meta;
+        let isInsumo = listInsumo.includes(of);
+
+        let statusText = '❌ INSUFICIENTE';
+        if(bateu) statusText = '✅ SATISFATÓRIO';
+        else if(isInsumo) statusText = '⚠️ SEM INSUMO';
+
+        let perc = g.meta > 0 ? Math.round((g.prod / g.meta) * 100) : (isInsumo ? 0 : 100);
+
+        text += `🏢 *${of}*\n`;
+        text += `Status: ${statusText}\n`;
+        text += `Produção: ${g.prod} / Meta: ${g.meta} (${perc}%)\n`;
+        
+        g.items.forEach(i => {
+            text += `- ${i.producaoDia}x ${i.item} (${i.tipo})\n`;
+        });
+
+        if(!bateu) {
+            let uniqJ = [...new Set(g.justs)].filter(j => j && j.trim() !== "");
+            if(uniqJ.length) text += `Motivo: ${uniqJ.join(', ')}\n`;
+            else text += `Motivo: Não informado\n`;
+        }
+        text += `\n`;
+      });
+
+      if(listMissing.length > 0) {
+          text += `*⚪ NÃO INFORMADOS:*\n`;
+          listMissing.forEach(of => { text += `- ${of}\n`; });
+      }
+      openWhatsModal(text.trim());
+  }
+
+  // --- PAGE 1: DIARIO ---
+  function renderPage1() {
+    let val = document.getElementById('dailyDate').value;
+    if(!val) return;
+    let sDate = val.split('-').reverse().join('/');
+    let data = rawData.filter(r => r.data === sDate);
+    let cont = document.getElementById('dailyCards');
+    let summaryCont = document.getElementById('dailySummary');
+    cont.innerHTML = ''; summaryCont.innerHTML = '';
+
+    let allOficinas = [...new Set(rawData.map(r => r.oficina))].sort();
+    let groups = {};
+    data.forEach(r => {
+      if(!groups[r.oficina]) groups[r.oficina] = { prod:0, justs:[], items:[] };
+      groups[r.oficina].prod += r.producaoDia;
+      if(r.justificativa) groups[r.oficina].justs.push(r.justificativa);
+      groups[r.oficina].items.push(r);
+    });
+
+    let listOk = []; let listFail = []; let listInsumo = []; let listMissing = [];
+
+    Object.keys(groups).forEach(of => {
+        let g = groups[of];
+        let validItems = g.items.filter(r => !(r.producaoDia === 0 && isSemInsumo(r.justificativa)));
+        g.meta = validItems.length > 0 ? calculateDynamicMeta(validItems) : 0;
+        let hasInsumoIssue = g.justs.some(j => isSemInsumo(j));
+
+        if (g.prod > 0 && g.prod >= g.meta) listOk.push(of);
+        else if (g.prod === 0 && hasInsumoIssue) listInsumo.push(of); 
+        else listFail.push(of);
+    });
+
+    let selDateObj = new Date(val.split('-')[0], val.split('-')[1]-1, val.split('-')[2]);
+    let isWeekendDay = selDateObj.getDay() === 0 || selDateObj.getDay() === 6;
+
+    let presentOficinas = Object.keys(groups);
+    let maxDates = {};
+    rawData.forEach(r => { if (!maxDates[r.oficina] || r.dateObj > maxDates[r.oficina]) maxDates[r.oficina] = r.dateObj; });
+
+    if (isWeekendDay) listMissing = []; 
+    else listMissing = allOficinas.filter(of => {
+        if (presentOficinas.includes(of)) return false;
+        if ((of === "GALPÃO 3.1" || of === "GALPÃO 3.2") && selDateObj > maxDates[of]) return false;
+        return true;
+    });
+
+    let titleHtml = `Diário de Produção ${isWeekendDay ? '<span style="font-size:14px; background:var(--warning-bg); color:var(--warning-text-dark); padding:4px 8px; border-radius:4px; margin-left:10px; font-weight: 600;">Fim de Semana</span>' : ''}`;
+    document.getElementById('page1Title').innerHTML = titleHtml;
+
+    listOk.sort(); listInsumo.sort(); listFail.sort(); listMissing.sort();
+
+    summaryCont.innerHTML = `
+        <div class="p1-stat-card" style="border-left: 5px solid var(--success-text);">
+            <div style="font-size:12px; text-transform:uppercase; color:var(--text-muted); font-weight:600">Satisfatório</div>
+            <div class="p1-stat-val" style="color:var(--success-text)">${listOk.length}</div>
+        </div>
+        <div class="p1-stat-card" style="border-left: 5px solid var(--warning-text-dark);">
+            <div style="font-size:12px; text-transform:uppercase; color:var(--text-muted); font-weight:600">Sem Insumo</div>
+            <div class="p1-stat-val" style="color:var(--warning-text-dark)">${listInsumo.length}</div>
+        </div>
+        <div class="p1-stat-card" style="border-left: 5px solid var(--danger-text);">
+            <div style="font-size:12px; text-transform:uppercase; color:var(--text-muted); font-weight:600">Insuficiente</div>
+            <div class="p1-stat-val" style="color:var(--danger-text)">${listFail.length}</div>
+        </div>
+        <div class="p1-stat-card" style="border-left: 5px solid var(--neutral-text);">
+            <div style="font-size:12px; text-transform:uppercase; color:var(--text-muted); font-weight:600">Não Informado</div>
+            <div class="p1-stat-val" style="color:var(--neutral-text)">${listMissing.length}</div>
+        </div>
+    `;
+
+    if(!listOk.length && !listInsumo.length && !listFail.length && !listMissing.length) { cont.innerHTML = '<div style="color:var(--text-muted)">Sem registros.</div>'; return; }
+
+    let presentSorted = [...listOk, ...listInsumo, ...listFail];
+    presentSorted.forEach(of => {
+      let g = groups[of];
+      let bateu = g.prod > 0 && g.prod >= g.meta;
+      let isInsumo = listInsumo.includes(of);
+
+      let itemsHtml = g.items.map(i => `<div class="item-row"><div><b>${i.item}</b> - ${i.tipo}</div><div>${i.producaoDia}</div></div>`).join('');
+      let infoMaq = g.items[0].maquinas || '?'; let infoInt = g.items[0].internos || '?';
+      let perc = g.meta > 0 ? Math.round((g.prod / g.meta) * 100) : 0;
+      if (g.meta === 0 && isInsumo) perc = 0;
+
+      let statusText = 'INSUFICIENTE'; let statusClass = 'fail';
+      if(bateu) { statusText = 'SATISFATÓRIO'; statusClass = 'ok'; }
+      else if(isInsumo) { statusText = 'SEM INSUMO'; statusClass = 'insumo'; }
+
+      let card = document.createElement('div'); card.className = 'card';
+      card.innerHTML = `
+        <div class="card-header">
+          <div style="display:flex; flex-direction:column; justify-content:center;">
+            <span style="font-weight:700; color:#1565C0">${of}</span>
+            <div style="font-size:11px; color:var(--text-muted); font-weight:400; margin-top:4px; display:flex; flex-direction:column; gap:2px;">
+                <span>Máquinas: ${infoMaq}</span>
+                <span>Internos: ${infoInt}</span>
+            </div>
+          </div>
+          <span class="pill ${statusClass}" style="font-size:13px; padding:6px 14px; box-shadow:0 2px 5px rgba(0,0,0,0.15); letter-spacing:0.5px;">${statusText}</span>
+        </div>
+        <div class="card-body" style="padding:15px">
+          <div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items:flex-end;">
+            <div>
+              <small style="font-weight:600; color:var(--text-muted)">PRODUÇÃO</small>
+              <div style="font-size:26px; font-weight:700; line-height:1.1">${g.prod}</div>
+              <small style="font-weight:600; color:var(--text-muted)">PERFORMANCE</small>
+            </div>
+            <div style="text-align:right">
+              <small>META</small>
+              <div style="font-size:18px; color:var(--text-muted)">${g.meta}</div>
+              <div style="font-size:14px; font-weight:700; color:${bateu?'var(--success-text)':(isInsumo?'var(--warning-text-dark)':'var(--danger-text)')}">${perc}%</div>
+            </div>
+          </div>
+          <div style="background:var(--bg-body); padding:10px; border-radius:8px; margin-bottom:10px">${itemsHtml}</div>
+          ${!bateu ? 
+            `<div style="border:1px solid var(--border); border-radius:8px; padding:8px; font-size:12px; color:var(--danger-text); margin-top:10px;">
+               <span style="font-weight:700">Motivo:</span> ${(g.justs.filter(j => j && j.trim() !== "").length > 0) ? g.justs.filter(j => j && j.trim() !== "").join(', ') : 'Não informado'}
+             </div>` : ''}
+        </div>`;
+      cont.appendChild(card);
+    });
+
+    listMissing.forEach(of => {
+       let card = document.createElement('div'); card.className = 'card';
+       card.innerHTML = `
+        <div class="card-header" style="background:#f0f0f0; border-bottom:1px solid #e0e0e0;">
+          <div style="display:flex; flex-direction:column; justify-content:center;">
+            <span style="font-weight:700; color:#757575">${of}</span>
+            <div style="font-size:11px; color:#9e9e9e; font-weight:400; margin-top:4px; display:flex; flex-direction:column; gap:2px;">
+                <span>Máquinas: N/A</span><span>Internos: N/A</span>
+            </div>
+          </div>
+          <span class="pill neutral" style="font-size:13px; padding:6px 14px; box-shadow:0 2px 5px rgba(0,0,0,0.05); letter-spacing:0.5px;">NÃO INFORMADO</span>
+        </div>
+        <div class="card-body" style="padding:15px; opacity:0.6;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items:flex-end;">
+            <div><small style="font-weight:600; color:var(--text-muted)">PRODUÇÃO</small><div style="font-size:26px; font-weight:700; line-height:1.1; color:#757575">0</div><small style="font-weight:600; color:var(--text-muted)">PERFORMANCE</small></div>
+            <div style="text-align:right"><small>META</small><div style="font-size:18px; color:var(--text-muted)">?</div><div style="font-size:14px; font-weight:700; color:var(--text-muted)">0%</div></div>
+          </div>
+        </div>`;
+       cont.appendChild(card);
+    });
+  }
+
+  // --- PAGE 2: DESEMPENHO ---
+  function setupChips() {
+    let dates = getFilterDates();
+    let filtered = rawData.filter(r => r.dateObj >= dates.start && r.dateObj <= dates.end);
+    let cont = document.getElementById('oficinaChips');
+    cont.innerHTML = '';
+    let list = [...new Set(filtered.map(r => r.oficina))].sort();
+    selectedOficinas = selectedOficinas.filter(o => list.includes(o));
+    if(list.length === 0) { cont.innerHTML = '<span style="font-size:12px; color:var(--text-muted)">Nenhuma oficina neste período.</span>'; }
+    list.forEach(of => {
+      let c = document.createElement('div');
+      c.className = 'chip'; 
+      if(selectedOficinas.includes(of)) c.classList.add('selected');
+      c.innerText = of;
+      c.onclick = () => {
+        if(selectedOficinas.includes(of)) { selectedOficinas = selectedOficinas.filter(x => x !== of); c.classList.remove('selected'); } 
+        else { selectedOficinas.push(of); c.classList.add('selected'); }
+        renderPage2();
+      };
+      cont.appendChild(c);
+    });
+    if(document.getElementById('page2').classList.contains('active')) renderPage2();
+  }
+
+  function renderPage2() {
+    let area = document.getElementById('chartsArea'); area.innerHTML = ''; activeCharts = [];
+    let datesFilter = getFilterDates();
+    let filtered = rawData.filter(r => r.dateObj >= datesFilter.start && r.dateObj <= datesFilter.end);
+    let dates = [...new Set(filtered.map(r => r.data))].sort((a,b) => { let da=a.split('/'), db=b.split('/'); return new Date(da[2],da[1]-1,da[0]) - new Date(db[2],db[1]-1,db[0]); });
+    let displayOrder = selectedOficinas.slice().reverse();
+    window.tempMissingData = {}; window.tempInsumoData = {}; 
+
+    displayOrder.forEach((of, idx) => {
+      let missingDates = getMissingBusinessDays(of, datesFilter.start, datesFilter.end, rawData);
+      window.tempMissingData[of] = missingDates; 
+
+      let dayRecords = filtered.filter(x => x.oficina === of);
+      let insumoRecords = dayRecords.filter(r => isSemInsumo(r.justificativa) && r.producaoDia === 0);
+      let insumoDatesSet = new Set(insumoRecords.map(r => `${r.data} (${daysOfWeek[r.dateObj.getDay()]})`));
+      let insumoDaysList = [...insumoDatesSet];
+      window.tempInsumoData[of] = insumoDaysList;
+
+      let totalProd = dayRecords.reduce((a, b) => a + b.producaoDia, 0);
+      
+      let daysMap = {};
+      dayRecords.forEach(r => { if(!daysMap[r.data]) daysMap[r.data] = []; daysMap[r.data].push(r); });
+      
+      let totalMeta = 0;
+      Object.keys(daysMap).forEach(dateStr => {
+          let rArr = daysMap[dateStr];
+          let dObj = rArr[0].dateObj;
+          let recessStart = new Date(2025, 11, 23); let recessEnd = new Date(2026, 0, 2);     
+          if (dObj >= recessStart && dObj <= recessEnd) return;
+          let validRecords = rArr.filter(r => !(r.producaoDia === 0 && isSemInsumo(r.justificativa)));
+          if (validRecords.length > 0) totalMeta += calculateDynamicMeta(validRecords);
+      });
+
+      let perfPerc = totalMeta > 0 ? Math.round((totalProd/totalMeta)*100) : 0;
+      if (totalMeta === 0 && totalProd > 0) perfPerc = 100; 
+      let perfClass = perfPerc >= 75 ? 'perf-green' : 'perf-red';
+
+      let refMetaRecord = filtered.find(r => r.oficina === of && r.metaOficina > 0);
+      let refMeta = refMetaRecord ? refMetaRecord.metaOficina : 0;
+      
+      let div = document.createElement('div'); div.className = 'chart-card';
+      div.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px;">
+           <h3 style="margin:0; font-size:20px; align-self:center;">${of}</h3>
+           <div class="p2-header-right">
+               <div class="perf-label ${perfClass}">PERFORMANCE: ${perfPerc}%</div>
+               ${missingDates.length > 0 ? `<div class="missing-label" onclick="openModal('Relatórios não enviados - ${of}', window.tempMissingData['${of}'])">RELATÓRIOS NÃO ENVIADOS: ${missingDates.length} DIAS</div>` : '' }
+               ${insumoDaysList.length > 0 ? `<div class="insumo-label" onclick="openModal('Dias sem Insumo (Prod: 0) - ${of}', window.tempInsumoData['${of}'])">DIAS SEM INSUMO (PROD ZERO): ${insumoDaysList.length} DIAS</div>` : '' }
+           </div>
+        </div>
+        <div style="height:300px"><canvas></canvas></div>`;
+      area.appendChild(div);
+
+      let ofMaxDate = dayRecords.length > 0 ? new Date(Math.max(...dayRecords.map(r => r.dateObj.getTime()))) : new Date(0);
+
+      let prodData = dates.map(d => {
+         let pts = d.split('/'); let dObj = new Date(pts[2], pts[1]-1, pts[0]);
+         if ((of === "GALPÃO 3.1" || of === "GALPÃO 3.2") && dObj > ofMaxDate) return null;
+         let rs = filtered.filter(x => x.oficina === of && x.data === d);
+         if (rs.length === 0 && isDateWeekend(d)) return null; 
+         return rs.reduce((a,b)=>a+b.producaoDia,0) || 0;
+      });
+      
+      let metaData = dates.map(d => {
+         let pts = d.split('/'); let dObj = new Date(pts[2], pts[1]-1, pts[0]);
+         if ((of === "GALPÃO 3.1" || of === "GALPÃO 3.2") && dObj > ofMaxDate) return null;
+         let rs = filtered.filter(x => x.oficina === of && x.data === d);
+         if (rs.length === 0 && isDateWeekend(d)) return null; 
+         let valid = rs.filter(r => !(r.producaoDia === 0 && isSemInsumo(r.justificativa)));
+         if(valid.length > 0) return calculateDynamicMeta(valid); 
+         let allInsumo = rs.length > 0 && rs.every(r => r.producaoDia === 0 && isSemInsumo(r.justificativa));
+         if (allInsumo) return 0;
+         return refMeta;
+      });
+
+      let gridColor = getThemeColor('--chart-grid'); let txtColor = getThemeColor('--text-muted');
+      let ctx = div.querySelector('canvas');
+      let chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: dates,
+          datasets: [
+            {
+              label: 'Produção', data: prodData, spanGaps: true, borderColor: '#1E88E5', backgroundColor: '#1E88E5',
+              borderWidth: 3, pointRadius: 5, pointBackgroundColor: getThemeColor('--surface'), tension: 0.2,
+              datalabels: { align:'top', backgroundColor:'#1E88E5', borderRadius:4, color:'white', font:{weight:'bold'}, formatter: (val) => val === null ? '' : (val === 0 ? '0' : val) }
+            },
+            {
+              label: 'Meta', data: metaData, spanGaps: true, borderColor: '#EF5350', borderWidth: 2, borderDash: [6,6], pointRadius: 0, datalabels: { display: false }
+            }
+          ]
+        },
+        options: {
+          responsive:true, maintainAspectRatio:false,
+          scales: { y: { beginAtZero:true, grid:{color:gridColor}, ticks:{color:txtColor} }, x: { grid:{display:false}, ticks:{color:txtColor} } },
+          plugins: { 
+            legend: { labels: { color: txtColor } },
+            tooltip: {
+              callbacks: {
+                afterBody: function(tooltipItems) {
+                  let idx = tooltipItems[0].dataIndex; let dateVal = dates[idx];
+                  let dayRecords = filtered.filter(x => x.oficina === of && x.data === dateVal);
+                  let totalProd = dayRecords.reduce((a, b) => a + b.producaoDia, 0);
+                  let validRecords = dayRecords.filter(r => !(r.producaoDia === 0 && isSemInsumo(r.justificativa)));
+                  let dayMeta = validRecords.length ? calculateDynamicMeta(validRecords) : refMeta;
+                  
+                  let finalLines = [];
+                  if (totalProd > 0) dayRecords.forEach(r => { finalLines.push(...wrapText(`• ${r.item} (${r.tipo}): ${r.producaoDia}`, 50)); });
+                  if (totalProd < dayMeta) {
+                      let justs = [...new Set(dayRecords.map(r => r.justificativa).filter(j => j && j.trim() !== ""))];
+                      if (justs.length > 0) justs.forEach(j => { finalLines.push(...wrapText(`• Motivo: ${j}`, 50)); }); 
+                      else finalLines.push('• Motivo: Não informado');
+                  }
+                  return finalLines;
+                }
+              }
+            }
+          }
+        }
+      });
+      activeCharts.push(chart);
+    });
+  }
+
+  // --- PAGE 3: DETALHES ---
+  function renderPage3() {
+    let dates = getFilterDates();
+    let filtered = rawData.filter(r => r.dateObj >= dates.start && r.dateObj <= dates.end);
+    
+    let uniqueOficinasAll = [...new Set(filtered.map(r=>r.oficina))];
+    let rankingData = [];
+    window.tempMissingDataP3 = {}; 
+    
+    let fmtDate = d => d.getDate().toString().padStart(2,'0') + '/' + (d.getMonth()+1).toString().padStart(2,'0') + '/' + d.getFullYear();
+    document.getElementById('rankingPeriodDisplay').innerText = `Ranking de ${fmtDate(dates.start)} até ${fmtDate(dates.end)}`;
+
+    uniqueOficinasAll.forEach(of => {
+        let dayRecords = filtered.filter(x => x.oficina === of);
+        let totalProd = dayRecords.reduce((a, b) => a + b.producaoDia, 0);
+        let daysMap = {};
+        dayRecords.forEach(r => { if(!daysMap[r.data]) daysMap[r.data] = []; daysMap[r.data].push(r); });
+        
+        let totalMeta = 0;
+        Object.keys(daysMap).forEach(dateStr => {
+            let rArr = daysMap[dateStr];
+            let dObj = rArr[0].dateObj;
+            let recessStart = new Date(2025, 11, 23); let recessEnd = new Date(2026, 0, 2);     
+            if (dObj >= recessStart && dObj <= recessEnd) return;
+            let validRecords = rArr.filter(r => !(r.producaoDia === 0 && isSemInsumo(r.justificativa)));
+            if (validRecords.length > 0) totalMeta += calculateDynamicMeta(validRecords);
+        });
+
+        let perc = totalMeta > 0 ? Math.round((totalProd/totalMeta)*100) : 0;
+        if (totalMeta === 0 && totalProd > 0) perc = 100;
+        rankingData.push({ name: of, perc: perc });
+    });
+
+    rankingData.sort((a,b) => b.perc - a.perc);
+
+    let rankCont = document.getElementById('rankingList'); rankCont.innerHTML = '';
+    if (rankingData.length === 0) rankCont.innerHTML = '<div style="color:var(--text-muted)">Sem dados para ranking.</div>';
+    else {
+        rankingData.forEach((item, index) => {
+            let color = getColorForPercentage(item.perc);
+            let div = document.createElement('div'); div.className = 'rank-item';
+            div.innerHTML = `
+                <div class="rank-pos">#${index+1}</div>
+                <div class="rank-info">
+                    <div class="rank-name" title="${item.name}">${item.name}</div>
+                    <div class="rank-bar-bg"><div class="rank-bar-fill" style="width:${Math.min(item.perc, 100)}%; background:${color}"></div></div>
+                </div>
+                <div class="rank-val">${item.perc}%</div>
+            `;
+            rankCont.appendChild(div);
+        });
+    }
+
+    let missingRankingData = [];
+    uniqueOficinasAll.forEach(of => {
+        let missingDates = getMissingBusinessDays(of, dates.start, dates.end, rawData);
+        window.tempMissingDataP3[of] = missingDates; 
+        if(missingDates.length > 0) missingRankingData.push({ name: of, count: missingDates.length, dates: missingDates });
+    });
+    missingRankingData.sort((a,b) => b.count - a.count);
+
+    let rankMissingCont = document.getElementById('rankingMissingList'); rankMissingCont.innerHTML = '';
+    if (missingRankingData.length === 0) {
+        rankMissingCont.innerHTML = '<div style="color:var(--text-muted); font-size: 14px; padding: 10px;">Todas as malharias enviaram relatórios neste período.</div>';
+    } else {
+        let maxMissing = missingRankingData[0].count;
+        missingRankingData.forEach((item, index) => {
+            let widthPerc = (item.count / maxMissing) * 100;
+            let div = document.createElement('div'); div.className = 'rank-item'; div.style.cursor = 'pointer';
+            div.title = "Clique para ver os detalhes dos dias não informados";
+            div.onclick = () => openMissingDetailsModal(item.name, item.dates);
+            div.innerHTML = `
+                <div class="rank-pos">#${index+1}</div>
+                <div class="rank-info">
+                    <div class="rank-name" title="${item.name}">${item.name}</div>
+                    <div class="rank-bar-bg"><div class="rank-bar-fill" style="width:${widthPerc}%; background:var(--neutral-text, #9e9e9e)"></div></div>
+                </div>
+                <div class="rank-val" style="font-weight: 700; color:var(--neutral-text, #9e9e9e)">${item.count} dias</div>
+            `;
+            rankMissingCont.appendChild(div);
+        });
+    }
+
+    let list = document.getElementById('detailedList'); list.innerHTML = '';
+    let uniqueOficinas = [...new Set(filtered.map(r=>r.oficina))].sort();
+    
+    let chartHeight = Math.max(400, uniqueOficinas.length * 40);
+    document.getElementById('chartDetailsContainer').style.height = chartHeight + 'px';
+
+    let labels = []; let dataOk = []; let dataFail = [];
+
+    uniqueOficinas.forEach(of => {
+      let rs = filtered.filter(r => r.oficina === of);
+      let days = {}; 
+      rs.forEach(r => { 
+        if(!days[r.data]) days[r.data]={p:0, items: [], j:[]}; 
+        days[r.data].p += r.producaoDia; days[r.data].items.push(r);
+        if(r.justificativa) days[r.data].j.push(r.justificativa);
+      });
+      
+      let okCount = 0; let failCount = 0; let insumoZeroCount = 0;
+      
+      Object.keys(days).forEach(d => {
+          let inf = days[d];
+          let validItems = inf.items.filter(r => !(r.producaoDia === 0 && isSemInsumo(r.justificativa)));
+          if (validItems.length > 0) inf.m = calculateDynamicMeta(validItems);
+          else inf.m = 0; 
+          
+          let hasInsumoZero = inf.p === 0 && inf.j.some(just => isSemInsumo(just));
+          if (hasInsumoZero) { insumoZeroCount++; return; }
+          if(inf.p >= inf.m) okCount++; else failCount++;
+      });
+
+      labels.push(of); dataOk.push(okCount); dataFail.push(failCount);
+
+      let tot = okCount + failCount;
+      let pc = tot?Math.round((okCount/tot)*100):0;
+      let missingDates = window.tempMissingDataP3[of] || [];
+
+      let rows = '';
+      Object.keys(days).sort((a,b)=>{let da=a.split('/'),db=b.split('/');return new Date(db[2],db[1]-1,db[0]) - new Date(da[2],da[1]-1,da[0])}).forEach(d=>{
+        let pts = d.split('/'); let dayOfWeek = new Date(pts[2], pts[1]-1, pts[0]).getDay();
+        let isWknd = dayOfWeek === 0 || dayOfWeek === 6;
+
+        let inf=days[d]; 
+        let isOk=inf.p>=inf.m;
+        let hasInsumoZero = inf.p === 0 && inf.j.some(just => isSemInsumo(just));
+        let statusText = isOk ? 'OK' : 'FALHA';
+        let statusColor = isOk ? 'var(--success-text)' : 'var(--danger-text)';
+
+        if (hasInsumoZero) { statusText = 'S/ INSUMO'; statusColor = 'var(--warning-text-dark)'; }
+        let dLabel = d;
+        if (isWknd) dLabel += ` <span style="font-size:10px; color:var(--warning-text-dark); font-weight:bold;">(${daysOfWeek[dayOfWeek]})</span>`;
+
+        let uniqJ = [...new Set(inf.j)].filter(j => j && j.trim() !== "");
+        let justNote = '';
+        if (!isOk) {
+            justNote = `<div class="just-note">Motivo: ${uniqJ.length > 0 ? uniqJ.join(', ') : 'Não informado'}</div>`;
+        }
+        
+        rows += `<div class="row-day"><span style="width:110px">${dLabel}</span><span style="flex:1; text-align:center">${inf.p} / ${inf.m}</span><span style="font-weight:700; color:${statusColor}">${statusText}</span></div>${justNote}`;
+      });
+      
+      let el = document.createElement('div'); el.className='detail-card';
+      el.innerHTML=`
+        <div class="detail-head" onclick="this.parentElement.classList.toggle('open')">
+           <div style="display:flex; align-items:center; gap:10px">
+              <span style="font-weight:600">${of}</span>
+              ${missingDates.length > 0 ? `<span class="pill neutral" style="font-size:11px" onclick="event.stopPropagation(); openMissingDetailsModal('${of}', window.tempMissingDataP3['${of}'])">SR: ${missingDates.length} dias</span>` : ''}
+              ${insumoZeroCount > 0 ? `<span class="pill insumo" style="font-size:11px" title="Dias com produção 0 devido à falta de insumos">S/I: ${insumoZeroCount} dias</span>` : ''}
+           </div>
+           <span>${okCount}/${tot} Dias (${pc}%)</span>
+        </div>
+        <div class="detail-content">${rows}</div>`;
+      list.appendChild(el);
+    });
+
+    if(chartDetailsInst) chartDetailsInst.destroy();
+    let ctx = document.getElementById('chartDetails').getContext('2d');
+    let txtColor = getThemeColor('--text-muted'); let gridColor = getThemeColor('--chart-grid');
+
+    chartDetailsInst = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Satisfatório', data: dataOk, backgroundColor: '#2E7D32', barPercentage: 0.5, categoryPercentage: 0.9,
+                    datalabels: { color: 'white', font: {size: 14, weight:'bold'}, display: (ctx)=>ctx.dataset.data[ctx.dataIndex]>0 }
+                },
+                {
+                    label: 'Insuficiente', data: dataFail, backgroundColor: '#C62828', barPercentage: 0.5, categoryPercentage: 0.9,
+                    datalabels: { color: 'white', font: {size: 14, weight:'bold'}, display: (ctx)=>ctx.dataset.data[ctx.dataIndex]>0, formatter: (val) => val }
+                }
+            ]
+        },
+        options: {
+            indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+            scales: { x: { stacked: true, grid: {color: gridColor}, ticks: {color:txtColor} }, y: { stacked: true, grid: {display:false}, ticks: { color:txtColor, font:{size:13, weight:'bold'}, autoSkip: false } } },
+            plugins: {
+                title: { display: true, text: 'Dias com meta satisfatória x Dias com meta insuficiente', color: txtColor, font: {size: 22, weight: '700'}, align: 'start', padding: {bottom: 15} },
+                legend: { labels: {color:txtColor} }, tooltip: { mode: 'index', intersect: true }, customLabels: { }
+            }
+        },
+        plugins: [{
+            id: 'customLabels',
+            afterDatasetsDraw: (chart) => {
+                const { ctx } = chart;
+                ctx.save(); ctx.font = Chart.helpers.fontString(14, 'bold', 'Poppins'); ctx.fillStyle = txtColor; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+                const meta = chart.getDatasetMeta(1);
+                meta.data.forEach((bar, index) => {
+                    let ok = dataOk[index]; let fail = dataFail[index]; let total = ok + fail;
+                    let percent = total > 0 ? Math.round((ok / total) * 100) + '%' : '0%';
+                    let ofName = labels[index]; let missingCount = (window.tempMissingDataP3[ofName] || []).length;
+                    let text = percent; if(missingCount > 0) text += `  (SR: ${missingCount} dias)`;
+                    ctx.fillText(text, bar.x + 8, bar.y);
+                });
+                ctx.restore();
+            }
+        }]
+    });
+  }
+
+  // --- PAGE 4: DEMANDA ---
+  function setupDemanda() {
+    globalDemandas = [...new Set(rawData.map(r => r.item).filter(Boolean))].sort();
+    let sel = document.getElementById('p4Demanda'); let currentVal = sel.value;
+    sel.innerHTML = '';
+    let optsContainer = document.getElementById('demandaOptionsContainer'); optsContainer.innerHTML = '';
+
+    if (globalDemandas.length > 0) {
+        if (!globalDemandas.includes(currentVal)) currentVal = globalDemandas[0];
+        sel.value = currentVal;
+        document.getElementById('demandaSelectedText').innerText = currentVal;
+
+        globalDemandas.forEach(d => {
+            let o = document.createElement('option'); o.value = d; sel.appendChild(o);
+            let optDiv = document.createElement('div'); optDiv.className = 'custom-option'; optDiv.innerText = d;
+            optDiv.onclick = (e) => { e.stopPropagation(); selectDemandaOption(d); };
+            optsContainer.appendChild(optDiv);
+        });
+    } else { document.getElementById('demandaSelectedText').innerText = 'Nenhuma demanda'; }
+    updateP4Pecas(); 
+  }
+
+  function toggleDemandaDropdown() {
+    let content = document.getElementById('demandaDropdownContent');
+    let isHidden = content.style.display === 'none' || content.style.display === '';
+    if (isHidden) {
+        content.style.display = 'flex';
+        document.getElementById('demandaSearchInput').value = '';
+        filterDemandaOptions(); 
+        setTimeout(() => document.getElementById('demandaSearchInput').focus(), 50);
+    } else { content.style.display = 'none'; }
+  }
+
+  function selectDemandaOption(val) {
+    document.getElementById('demandaSelectedText').innerText = val; document.getElementById('p4Demanda').value = val; 
+    document.getElementById('demandaDropdownContent').style.display = 'none';
+    updateP4Pecas(); renderPage4();   
+  }
+
+  function filterDemandaOptions(e) {
+    if (e) e.stopPropagation();
+    let query = document.getElementById('demandaSearchInput').value.toLowerCase();
+    let opts = document.querySelectorAll('#demandaOptionsContainer .custom-option');
+    opts.forEach(opt => {
+        let text = opt.innerText.toLowerCase();
+        if (text.includes(query)) opt.style.display = 'block'; else opt.style.display = 'none';
+    });
+  }
+
+  document.addEventListener('click', function(event) {
+    let dropdown = document.getElementById('demandaDropdown'); let content = document.getElementById('demandaDropdownContent');
+    if (dropdown && content && !dropdown.contains(event.target)) { content.style.display = 'none'; }
+  });
+
+  function filterP4Pecas() {
+    let query = document.getElementById('p4SearchPecas').value.toLowerCase();
+    let labels = document.querySelectorAll('#p4PecasContainer .check-item');
+    labels.forEach(label => {
+      let text = label.innerText.toLowerCase();
+      if(text.includes(query)) label.style.display = 'flex'; else label.style.display = 'none';
+    });
+  }
+
+  function updateP4Pecas() {
+    let searchInput = document.getElementById('p4SearchPecas');
+    if(searchInput) searchInput.value = '';
+
+    let dem = document.getElementById('p4Demanda').value;
+    let demandRecords = rawData.filter(r => r.item === dem && r.tipo);
+    let list = [...new Set(demandRecords.map(r => r.tipo))].sort();
+    
+    let cont = document.getElementById('p4PecasContainer'); cont.innerHTML = '';
+    list.forEach(p => {
+      let div = document.createElement('label'); div.className = 'check-item';
+      div.innerHTML = `<input type="checkbox" value="${p}" onchange="renderPage4()"> ${p}`;
+      cont.appendChild(div);
+    });
+    
+    if(chartDemandaInst) { chartDemandaInst.destroy(); chartDemandaInst=null; }
+    let sumEl = document.getElementById('p4Summary'); if(sumEl) sumEl.innerHTML = '';
+    let bkEl = document.getElementById('p4OficinasBreakdown'); if(bkEl) bkEl.innerHTML = '';
+  }
+
+  function renderPage4() {
+    let datesFilter = getFilterDates(); let dem = document.getElementById('p4Demanda').value;
+    let checks = document.querySelectorAll('#p4PecasContainer input:checked'); let selPecas = Array.from(checks).map(c => c.value);
+    let breakdownCont = document.getElementById('p4OficinasBreakdown');
+
+    if(!selPecas.length) { 
+      if(chartDemandaInst) { chartDemandaInst.destroy(); chartDemandaInst=null; } 
+      document.getElementById('p4Summary').innerHTML = ''; breakdownCont.innerHTML = ''; return; 
+    }
+
+    let filtered = rawData.filter(r => r.dateObj >= datesFilter.start && r.dateObj <= datesFilter.end && r.item === dem && selPecas.includes(r.tipo));
+    
+    let totals = {}; selPecas.forEach(p => totals[p] = 0);
+    filtered.forEach(r => totals[r.tipo] += r.producaoDia);
+    
+    let summaryHTML = '';
+    selPecas.forEach(p => { summaryHTML += `<div class="summary-item">${p}: ${totals[p]} un</div>`; });
+    document.getElementById('p4Summary').innerHTML = summaryHTML;
+
+    let dates = [...new Set(filtered.map(r => r.data))].sort((a,b)=>{
+       let da=a.split('/'), db=b.split('/'); return new Date(da[2],da[1]-1,da[0]) - new Date(db[2],db[1]-1,db[0]);
+    });
+
+    let datasets = selPecas.map((peca, i) => {
+       let colors = ['#1565C0', '#42A5F5', '#1E88E5', '#64B5F6', '#90CAF9']; let c = colors[i % colors.length];
+       let data = dates.map(d => {
+         let rs = filtered.filter(x => x.data === d && x.tipo === peca);
+         if (rs.length === 0 && isDateWeekend(d)) return null; 
+         return rs.reduce((a,b)=>a+b.producaoDia, 0) || 0;
+       });
+       return { label: peca, data: data, borderColor: c, backgroundColor: c, tension: 0.3, pointRadius: 4, borderWidth: 2, spanGaps: true };
+    });
+
+    let ctx = document.getElementById('chartDemanda').getContext('2d');
+    if(chartDemandaInst) chartDemandaInst.destroy();
+    let gridColor = getThemeColor('--chart-grid'); let txtColor = getThemeColor('--text-muted');
+
+    chartDemandaInst = new Chart(ctx, {
+      type: 'line',
+      data: { labels: dates, datasets: datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: { y: { grid: {color:gridColor}, ticks:{color:txtColor} }, x: { grid:{display:false}, ticks:{color:txtColor} } },
+        plugins: { legend: { labels: { color: txtColor } }, datalabels: { display: 'auto', color: txtColor, anchor:'end', align:'top', offset:2, formatter: (val) => val === null ? '' : val } }
+      }
+    });
+
+    let oficinaTotals = {};
+    filtered.forEach(r => {
+      if(!oficinaTotals[r.oficina]) oficinaTotals[r.oficina] = {};
+      if(!oficinaTotals[r.oficina][r.tipo]) oficinaTotals[r.oficina][r.tipo] = 0;
+      oficinaTotals[r.oficina][r.tipo] += r.producaoDia;
+      if(!oficinaTotals[r.oficina]['_total']) oficinaTotals[r.oficina]['_total'] = 0;
+      oficinaTotals[r.oficina]['_total'] += r.producaoDia;
+    });
+
+    if(Object.keys(oficinaTotals).length === 0) { breakdownCont.innerHTML = ''; return; }
+
+    let breakdownHtml = '<h4 style="margin-top:0; color:var(--text-main); font-size:14px; margin-bottom:15px;">Produção por Oficina (Peças Selecionadas)</h4><div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:10px;">';
+    let sortedOficinas = Object.keys(oficinaTotals).sort((a,b) => oficinaTotals[b]['_total'] - oficinaTotals[a]['_total']);
+    
+    sortedOficinas.forEach(of => {
+       breakdownHtml += `<div style="background:var(--bg-body); padding:10px; border-radius:8px; border:1px solid var(--border);"><div style="font-weight:700; color:var(--primary); font-size:13px; margin-bottom:5px;">${of}</div>`;
+       selPecas.forEach(p => {
+          if(oficinaTotals[of][p] > 0) {
+              breakdownHtml += `<div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); border-bottom:1px dashed var(--border); padding:2px 0;"><span>${p}</span> <span style="font-weight:600; color:var(--text-main);">${oficinaTotals[of][p]}</span></div>`;
+          }
+       });
+       breakdownHtml += `<div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; margin-top:5px;"><span>TOTAL</span> <span style="color:var(--primary);">${oficinaTotals[of]['_total']}</span></div></div>`;
+    });
+    breakdownHtml += '</div>'; breakdownCont.innerHTML = breakdownHtml;
+  }
+</script>
