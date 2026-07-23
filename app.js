@@ -7,7 +7,6 @@ const dotenv = require('dotenv');
 dotenv.config();
 const app = express();
 app.set('view engine', 'ejs');
-// Define o caminho absoluto para as views (Essencial para o Vercel achar os arquivos HTML/EJS)
 app.set('views', path.join(__dirname, 'views'));
 const myCache = new NodeCache({ stdTTL: 600 }); // 10 min
 
@@ -18,17 +17,33 @@ try {
     if (process.env.GOOGLE_CREDENTIALS) {
         console.log("Lendo credenciais do Vercel...");
         let rawCreds = process.env.GOOGLE_CREDENTIALS;
+        let credsObj;
         
-        // O Vercel às vezes adiciona aspas extras no começo e no fim, isso quebra o JSON
-        if (rawCreds.startsWith('"') && rawCreds.endsWith('"')) {
-            rawCreds = rawCreds.substring(1, rawCreds.length - 1);
+        try {
+            // Tentativa 1: O Vercel enviou o JSON limpo
+            credsObj = JSON.parse(rawCreds);
+        } catch (e1) {
+            // Tentativa 2: O Vercel adicionou aspas em volta da string toda (comum em deploy)
+            console.log("Limpando aspas invisíveis do Vercel...");
+            rawCreds = rawCreds.trim();
+            if ((rawCreds.startsWith('"') && rawCreds.endsWith('"')) || (rawCreds.startsWith("'") && rawCreds.endsWith("'"))) {
+                rawCreds = rawCreds.substring(1, rawCreds.length - 1);
+            }
+            credsObj = JSON.parse(rawCreds);
         }
-        
-        // Garante que as quebras de linha da chave privada sejam lidas corretamente
-        const cleanJson = rawCreds.replace(/\\n/g, '\n');
-        
+
+        // Garante que a chave privada seja lida corretamente (O Google Auth exige \n real)
+        let privateKey = credsObj.private_key;
+        if (privateKey && privateKey.includes('\\n')) {
+            privateKey = privateKey.replace(/\\n/g, '\n');
+        }
+
         auth = new google.auth.GoogleAuth({
-            credentials: JSON.parse(cleanJson),
+            credentials: {
+                client_email: credsObj.client_email,
+                private_key: privateKey,
+                project_id: credsObj.project_id
+            },
             scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
         });
     } else {
@@ -103,7 +118,7 @@ function parseNumber(val) {
 
 // --- LÓGICA DE BUSCA DE DADOS ---
 async function fetchDataFromSheets() {
-    if (!sheets) throw new Error("API do Google não inicializada. O arquivo credentials.json está correto ou a variável no Vercel foi lida com sucesso?");
+    if (!sheets) throw new Error("API do Google não inicializada. Verifique os Logs do Vercel.");
     
     const spreadsheetId = '1GU1b3QiOh9sSisqI3g-a2MoR5mTESD_jaTt_tOH5QjA';
     
@@ -158,7 +173,7 @@ function processProcessData(values) {
     if (values.length < 2) return [];
     return values.slice(1).map(row => {
         let nProcRaw = String(row[2] || "").trim();
-        let nProc = nProcRaw ? nProcRaw.replace(/\./g, '') : "S/N"; // Força "S/N" se vier vazio
+        let nProc = nProcRaw ? nProcRaw.replace(/\./g, '') : "S/N"; 
         
         return {
             tipoDemanda: row[0], dataEntrada: normalizeDate(row[1]), nProcesso: nProc,
@@ -198,7 +213,6 @@ function processScheduleData(rawUpfem, rawCtrl) {
             
             let isGeneric = rawProc === "S/N" || rawProc.toUpperCase() === "SEM PROCESSO" || rawProc === "-";
             
-            // Se já estiver na UPFEM (e NÃO for genérico/vazio), ignora para não duplicar
             if (!isGeneric && upfemProcessSet[rawProc.toUpperCase()]) return null;
             
             let dataPrazo = normalizeDate(r[7]); 
@@ -265,11 +279,10 @@ app.get('/api/data', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Impede que o Vercel "tranque" o servidor por tentar abrir uma porta na nuvem
+// Impede que o Vercel "tranque" o servidor
 if (!process.env.VERCEL) {
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => console.log(`Malharia rodando localmente em http://localhost:${PORT}`));
 }
 
-// Obrigatório para o Serverless do Vercel funcionar
 module.exports = app;
