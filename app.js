@@ -7,31 +7,44 @@ const dotenv = require('dotenv');
 dotenv.config();
 const app = express();
 app.set('view engine', 'ejs');
+// Define o caminho absoluto para as views (Essencial para o Vercel achar os arquivos HTML/EJS)
 app.set('views', path.join(__dirname, 'views'));
 const myCache = new NodeCache({ stdTTL: 600 }); // 10 min
 
-// --- AUTENTICAÇÃO ---
+// --- AUTENTICAÇÃO BLINDADA PARA VERCEL E LOCAL ---
 let auth;
 let sheets;
 try {
     if (process.env.GOOGLE_CREDENTIALS) {
-        const cleanJson = process.env.GOOGLE_CREDENTIALS.replace(/\\n/g, '\n');
+        console.log("Lendo credenciais do Vercel...");
+        let rawCreds = process.env.GOOGLE_CREDENTIALS;
+        
+        // O Vercel às vezes adiciona aspas extras no começo e no fim, isso quebra o JSON
+        if (rawCreds.startsWith('"') && rawCreds.endsWith('"')) {
+            rawCreds = rawCreds.substring(1, rawCreds.length - 1);
+        }
+        
+        // Garante que as quebras de linha da chave privada sejam lidas corretamente
+        const cleanJson = rawCreds.replace(/\\n/g, '\n');
+        
         auth = new google.auth.GoogleAuth({
             credentials: JSON.parse(cleanJson),
             scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
         });
     } else {
+        console.log("Lendo arquivo credentials.json local...");
         auth = new google.auth.GoogleAuth({
             keyFile: 'credentials.json',
             scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
         });
     }
     sheets = google.sheets({ version: 'v4', auth });
+    console.log("✅ API do Google conectada com sucesso!");
 } catch (error) {
-    console.error("ERRO CRÍTICO NA LEITURA DA CHAVE:", error.message);
+    console.error("❌ ERRO CRÍTICO NA LEITURA DA CHAVE:", error.message);
 }
 
-// --- FUNÇÃO BLINDADA PARA DATAS (TOTALMENTE REESCRITA) ---
+// --- FUNÇÃO BLINDADA PARA DATAS ---
 function normalizeDate(val) {
     if (val === null || val === undefined || val === "") return "";
     
@@ -90,7 +103,8 @@ function parseNumber(val) {
 
 // --- LÓGICA DE BUSCA DE DADOS ---
 async function fetchDataFromSheets() {
-    if (!sheets) throw new Error("API do Google não inicializada.");
+    if (!sheets) throw new Error("API do Google não inicializada. O arquivo credentials.json está correto ou a variável no Vercel foi lida com sucesso?");
+    
     const spreadsheetId = '1GU1b3QiOh9sSisqI3g-a2MoR5mTESD_jaTt_tOH5QjA';
     
     const ranges = [
@@ -163,7 +177,7 @@ function processScheduleData(rawUpfem, rawCtrl) {
     if (rawUpfem.length > 1) {
         dataUpfem = rawUpfem.slice(1).map(r => {
             let nProcRaw = String(r[1] || "").trim(); 
-            let nProc = nProcRaw ? nProcRaw.replace(/\./g, '') : "S/N"; // Impede que processos vazios sejam deletados
+            let nProc = nProcRaw ? nProcRaw.replace(/\./g, '') : "S/N"; 
             
             let isGeneric = nProc === "S/N" || nProc.toUpperCase() === "SEM PROCESSO" || nProc === "-";
             if (!isGeneric) {
@@ -171,7 +185,7 @@ function processScheduleData(rawUpfem, rawCtrl) {
             }
             
             let dataPrazo = normalizeDate(r[11]); 
-            if (!dataPrazo) return null; // Se não tem prazo, não entra no calendário
+            if (!dataPrazo) return null; 
             
             return { source: 'UPFEM', nProcesso: nProc, orgao: r[2], produto: r[3], tamanho: r[4], qtdPendente: parseNumber(r[8]), prazo: dataPrazo, status: r[9], situacao: r[10], obs: r[12] };
         }).filter(i => i !== null);
@@ -180,7 +194,7 @@ function processScheduleData(rawUpfem, rawCtrl) {
     if (rawCtrl.length > 1) {
         dataCtrl = rawCtrl.slice(1).map(r => {
             let rawProcRaw = String(r[2] || "").trim();
-            let rawProc = rawProcRaw ? rawProcRaw.replace(/\./g, '') : "S/N"; // Impede que processos vazios sejam deletados
+            let rawProc = rawProcRaw ? rawProcRaw.replace(/\./g, '') : "S/N"; 
             
             let isGeneric = rawProc === "S/N" || rawProc.toUpperCase() === "SEM PROCESSO" || rawProc === "-";
             
@@ -239,7 +253,7 @@ app.get('/', async (req, res) => {
         res.render('index', { INITIAL_DATA: JSON.stringify(data) });
     } catch (err) {
         console.error(err);
-        res.status(500).send("Erro ao carregar painel.");
+        res.status(500).send("Erro ao carregar painel: " + err.message);
     }
 });
 
@@ -251,7 +265,11 @@ app.get('/api/data', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Malharia rodando em http://localhost:${PORT}`));
+// Impede que o Vercel "tranque" o servidor por tentar abrir uma porta na nuvem
+if (!process.env.VERCEL) {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => console.log(`Malharia rodando localmente em http://localhost:${PORT}`));
+}
 
+// Obrigatório para o Serverless do Vercel funcionar
 module.exports = app;
