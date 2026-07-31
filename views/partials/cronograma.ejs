@@ -2,6 +2,7 @@
   .cronograma-wrapper {
     animation: fadeIn 0.4s ease;
     position: relative;
+    width: 100%;
   }
 
   .calendar-header {
@@ -22,6 +23,7 @@
     color: var(--primary); 
     text-transform: uppercase; 
     letter-spacing: 0.5px;
+    text-align: center;
   }
   
   .cal-btn { 
@@ -35,7 +37,9 @@
     display: flex; 
     align-items: center; 
     justify-content: center;
+    white-space: nowrap;
   }
+  
   .cal-btn:hover { 
     background: var(--primary); 
     color: #fff; 
@@ -44,8 +48,9 @@
 
   .calendar-grid {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, 1fr); /* 7 colunas fixas sempre */
     gap: 10px;
+    width: 100%;
   }
 
   .weekday-header {
@@ -63,12 +68,16 @@
   .day-cell {
     background: var(--surface);
     min-height: 140px;
+    /* REMOVIDO o max-height e overflow para a caixa crescer o quanto precisar */
+    height: auto; 
     border-radius: 12px;
     border: var(--card-border);
     padding: 8px;
     position: relative;
     transition: 0.2s;
     box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
   }
   
   .day-cell:hover { border-color: var(--primary); }
@@ -95,6 +104,7 @@
     transition: all 0.2s ease;
     border: 1px solid var(--border);
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    height: auto;
   }
   
   body.dark-mode .event-card { background: #2c2c2c; }
@@ -105,51 +115,54 @@
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   }
 
-  .event-summary { display: flex; flex-direction: column; gap: 4px; }
+  .event-summary { display: flex; flex-direction: column; gap: 6px; }
   
   .event-orgao {
     font-size: 11px;
     font-weight: 700;
     color: var(--text-main);
     line-height: 1.2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    /* PERMITE quebra de linha em telas pequenas */
+    white-space: normal;
+    word-break: break-word; 
   }
   
   .event-meta {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 4px;
+    flex-wrap: wrap; /* Permite que os badges caiam para a linha de baixo se não couberem */
   }
   
-  .badge-pend {
-    background: var(--danger-bg);
-    color: var(--danger-text);
+  .badge-pend, .badge-done {
     font-size: 10px;
     font-weight: 700;
-    padding: 2px 6px;
+    padding: 3px 6px;
     border-radius: 10px;
+    white-space: normal;
+    text-align: center;
+    flex: 1;
   }
-
-  .badge-done {
-    background: var(--success-bg);
-    color: var(--success-text);
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 10px;
-    border: 1px solid var(--success-text);
-  }
+  
+  .badge-pend { background: var(--danger-bg); color: var(--danger-text); }
+  .badge-done { background: var(--success-bg); color: var(--success-text); border: 1px solid var(--success-text); }
 
   .badge-proc {
-    font-size: 9px;
+    font-size: 10px;
     color: var(--text-muted);
     background: var(--bg-body);
-    padding: 2px 4px;
+    padding: 3px 5px;
     border-radius: 4px;
+    font-weight: 600;
+    /* MOSTRA O NÚMERO TODO quebrando em várias linhas se necessário */
+    white-space: normal;
+    word-break: break-all;
+    width: 100%;
+    text-align: center;
   }
 
+  /* --- MODAL --- */
   .crono-modal {
     display: none; 
     position: fixed; 
@@ -169,7 +182,7 @@
     background-color: var(--surface);
     padding: 0;
     border: 1px solid var(--border);
-    width: 500px;
+    width: 600px;
     max-width: 95%;
     border-radius: 16px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.2);
@@ -177,6 +190,7 @@
     flex-direction: column;
     overflow: hidden;
     position: relative;
+    max-height: 90vh;
   }
 
   .crono-header {
@@ -188,13 +202,12 @@
     align-items: center;
   }
 
-  .crono-title { font-size: 18px; font-weight: 700; }
+  .crono-title { font-size: 18px; font-weight: 700; word-break: break-word; padding-right: 15px; }
   .crono-close { cursor: pointer; color: white; opacity: 0.8; transition: 0.2s; }
   .crono-close:hover { opacity: 1; transform: scale(1.1); }
 
   .crono-body {
     padding: 20px;
-    max-height: 400px;
     overflow-y: auto;
   }
 
@@ -206,7 +219,7 @@
     border-bottom: 1px solid var(--border);
   }
   
-  .crono-info-item { display: flex; flex-direction: column; }
+  .crono-info-item { display: flex; flex-direction: column; flex: 1; }
   .crono-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
   .crono-value { font-size: 14px; font-weight: 500; color: var(--text-main); }
 
@@ -220,14 +233,67 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 15px;
   }
   
   .crono-prod-name { font-weight: 600; font-size: 14px; color: var(--text-main); }
   .crono-prod-detail { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
   
-  .status-tag { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+  .status-tag { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; text-align: center;}
   .st-pend { background: var(--danger-bg); color: var(--danger-text); }
   .st-done { background: var(--success-bg); color: var(--success-text); }
+
+  /* ========================================= */
+  /* COMPRESSÃO EXTREMA PARA TELAS MENORES     */
+  /* (Empilha informações no card para caber)  */
+  /* ========================================= */
+  @media (max-width: 900px) {
+    .calendar-grid { gap: 4px; }
+    .weekday-header { font-size: 10px; padding: 6px 2px; word-break: break-word; }
+    .day-cell { padding: 4px; min-height: 100px; }
+    
+    .event-card { 
+      padding: 4px; 
+      border-left-width: 3px; 
+      margin-bottom: 4px;
+    }
+    
+    .event-orgao { font-size: 10px; }
+    
+    .event-meta {
+      flex-direction: column; /* Empilha os blocos dentro do card */
+      align-items: stretch;
+      gap: 4px;
+    }
+    
+    .badge-proc { font-size: 9px; padding: 4px; }
+    .badge-pend, .badge-done { font-size: 9px; padding: 4px; }
+  }
+
+  @media (max-width: 600px) {
+    .calendar-header { flex-direction: column; gap: 10px; padding: 15px; }
+    .month-label { order: -1; font-size: 18px; }
+    .calendar-header .cal-btn { width: 100%; padding: 10px; }
+    
+    .calendar-grid { gap: 2px; }
+    .weekday-header { font-size: 9px; padding: 4px 0; }
+    
+    .day-cell { min-height: 80px; border-radius: 6px; padding: 2px; }
+    
+    .event-card { padding: 4px; border-left-width: 2px; border-radius: 4px;}
+    .event-orgao { font-size: 9px; }
+    
+    .badge-proc { font-size: 8px; }
+    .badge-pend, .badge-done { font-size: 8px; }
+
+    .day-number { font-size: 11px; padding-right: 2px; }
+
+    /* Modal no Mobile */
+    .crono-info-row { flex-wrap: wrap; gap: 10px; }
+    .crono-info-item { min-width: 45%; }
+    .crono-item-row { flex-direction: column; align-items: flex-start; }
+    .crono-item-row > div:last-child { width: 100%; text-align: left !important; margin-top: 5px; }
+  }
 </style>
 
 <div id="cronoModal" class="crono-modal">
@@ -295,12 +361,13 @@
       const startDayIndex = firstDay.getDay(); 
       const totalCells = 42; 
 
+      const today = new Date(); 
+      
       for (let i = startDayIndex; i > 0; i--) {
         const d = prevLastDay.getDate() - i + 1;
         this.createCell(grid, d, 'other-month');
       }
 
-      const today = new Date();
       for (let i = 1; i <= daysInMonth; i++) {
         let className = 'day-cell';
         if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {

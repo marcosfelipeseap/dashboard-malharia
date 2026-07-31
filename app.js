@@ -20,10 +20,8 @@ try {
         let credsObj;
         
         try {
-            // Tentativa 1: O Vercel enviou o JSON limpo
             credsObj = JSON.parse(rawCreds);
         } catch (e1) {
-            // Tentativa 2: O Vercel adicionou aspas em volta da string toda (comum em deploy)
             console.log("Limpando aspas invisíveis do Vercel...");
             rawCreds = rawCreds.trim();
             if ((rawCreds.startsWith('"') && rawCreds.endsWith('"')) || (rawCreds.startsWith("'") && rawCreds.endsWith("'"))) {
@@ -32,7 +30,6 @@ try {
             credsObj = JSON.parse(rawCreds);
         }
 
-        // Garante que a chave privada seja lida corretamente (O Google Auth exige \n real)
         let privateKey = credsObj.private_key;
         if (privateKey && privateKey.includes('\\n')) {
             privateKey = privateKey.replace(/\\n/g, '\n');
@@ -63,7 +60,8 @@ try {
 function normalizeDate(val) {
     if (val === null || val === undefined || val === "") return "";
     
-    // Trata Número de Série do Excel/Google Sheets (ex: 45398)
+    // Agora que usamos UNFORMATTED_VALUE, a planilha envia as datas reais como números (ex: 45580).
+    // Esse bloco captura o ano exato de 2025 ou 2026 direto do núcleo do Google Sheets!
     if (typeof val === 'number' || (typeof val === 'string' && !isNaN(val) && Number(val) > 40000)) {
         let serial = Number(val);
         let utc_days = Math.floor(serial - 25569);
@@ -81,6 +79,7 @@ function normalizeDate(val) {
     if (str.includes('/')) {
         let parts = str.split('/');
         if (parts.length === 2) {
+            // Removido o 2025 forçado, voltando para o original
             return `${parts[0].trim().padStart(2, '0')}/${parts[1].trim().padStart(2, '0')}/${new Date().getFullYear()}`;
         }
         if (parts.length >= 3) {
@@ -93,7 +92,6 @@ function normalizeDate(val) {
         }
     }
     
-    // Trata formato YYYY-MM-DD ou DD-MM-YYYY
     if (str.includes('-')) {
         let parts = str.split('-');
         if (parts.length >= 3) {
@@ -113,7 +111,7 @@ function parseNumber(val) {
         let clean = val.replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
         return parseFloat(clean) || 0;
     }
-    return val || 0;
+    return val || 0; // Se vier como número puro da API, passa direto
 }
 
 // --- LÓGICA DE BUSCA DE DADOS ---
@@ -127,8 +125,9 @@ async function fetchDataFromSheets() {
         'DEMANDA - UPFEM!A:M', 'Fardamento Interno - Novo!A:G', 'Fardamento Servidor!A:G'
     ];
     
+    // MUDANÇA CRUCIAL: UNFORMATTED_VALUE envia a data verdadeira em formato numérico
     const responses = await Promise.all(ranges.map(range => 
-        sheets.spreadsheets.values.get({ spreadsheetId, range, valueRenderOption: 'FORMATTED_VALUE' })
+        sheets.spreadsheets.values.get({ spreadsheetId, range, valueRenderOption: 'UNFORMATTED_VALUE' })
             .catch(() => ({ data: { values: [] } }))
     ));
 
@@ -157,7 +156,7 @@ function processSheetData(values) {
             data: dataStr, oficina, maquinas: String(row[5] || "0").trim(),
             internosVinc: parseNumber(row[4]), item, tipo: String(row[7] || "").trim(),
             internos: parseNumber(row[12]), metaOficina: parseNumber(row[14]),
-            producaoDia: parseNumber(row[15]), status: row[18], justificativa: row[19]
+            producaoDia: parseNumber(row[15]), status: String(row[18] || ""), justificativa: String(row[19] || "")
         };
     }).filter(i => i !== null && i.tipo !== "");
 }
@@ -176,12 +175,12 @@ function processProcessData(values) {
         let nProc = nProcRaw ? nProcRaw.replace(/\./g, '') : "S/N"; 
         
         return {
-            tipoDemanda: row[0], dataEntrada: normalizeDate(row[1]), nProcesso: nProc,
-            orgao: row[3], produto: row[4], qtdSolicitada: parseNumber(row[5]),
+            tipoDemanda: String(row[0] || ""), dataEntrada: normalizeDate(row[1]), nProcesso: nProc,
+            orgao: String(row[3] || ""), produto: String(row[4] || ""), qtdSolicitada: parseNumber(row[5]),
             qtdAutorizada: parseNumber(row[6]), prazo: normalizeDate(row[7]),
             qtdEntregue: parseNumber(row[8]), qtdFaltante: parseNumber(row[9]),
-            dataTermos: normalizeDate(row[10]), status: row[11], situacao: row[12],
-            obs: row[13], linkSei: String(row[15] || "").trim()
+            dataTermos: normalizeDate(row[10]), status: String(row[11] || ""), situacao: String(row[12] || ""),
+            obs: String(row[13] || ""), linkSei: String(row[15] || "").trim()
         };
     }).filter(i => i !== null);
 }
@@ -202,7 +201,7 @@ function processScheduleData(rawUpfem, rawCtrl) {
             let dataPrazo = normalizeDate(r[11]); 
             if (!dataPrazo) return null; 
             
-            return { source: 'UPFEM', nProcesso: nProc, orgao: r[2], produto: r[3], tamanho: r[4], qtdPendente: parseNumber(r[8]), prazo: dataPrazo, status: r[9], situacao: r[10], obs: r[12] };
+            return { source: 'UPFEM', nProcesso: nProc, orgao: String(r[2] || ""), produto: String(r[3] || ""), tamanho: String(r[4] || ""), qtdPendente: parseNumber(r[8]), prazo: dataPrazo, status: String(r[9] || ""), situacao: String(r[10] || ""), obs: String(r[12] || "") };
         }).filter(i => i !== null);
     }
     
@@ -218,7 +217,7 @@ function processScheduleData(rawUpfem, rawCtrl) {
             let dataPrazo = normalizeDate(r[7]); 
             if (!dataPrazo) return null; 
             
-            return { source: 'CTRL', nProcesso: rawProc, orgao: r[3], produto: r[4], tamanho: '-', qtdPendente: parseNumber(r[9]), prazo: dataPrazo, status: r[11], situacao: r[12], obs: r[13] };
+            return { source: 'CTRL', nProcesso: rawProc, orgao: String(r[3] || ""), produto: String(r[4] || ""), tamanho: '-', qtdPendente: parseNumber(r[9]), prazo: dataPrazo, status: String(r[11] || ""), situacao: String(r[12] || ""), obs: String(r[13] || "") };
         }).filter(i => i !== null);
     }
 
