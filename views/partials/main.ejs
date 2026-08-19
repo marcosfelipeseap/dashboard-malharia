@@ -18,11 +18,13 @@
     </div>
     <div class="filter-group"><label>Início</label><input type="date" id="globalStart" onchange="updateAll()"></div>
     <div class="filter-group"><label>Fim</label><input type="date" id="globalEnd" onchange="updateAll()"></div>
-    <!-- Botão de Refresh Novo Adicionado -->
-    <div class="filter-group" style="margin-left: auto;">
+    
+    <!-- Botão de Refresh e Relógio em Tempo Real -->
+    <div class="filter-group" style="margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 5px;">
       <button class="btn-notif btn-notif-sec" onclick="refreshDashboard()" style="padding: 6px 12px; font-size: 12px;">
         <span class="material-icons" style="font-size:16px; margin-right: 5px;">sync</span> Atualizar Dados
       </button>
+      <div id="lastUpdate" style="font-size: 13px; color: var(--text-muted); font-weight: 500;"></div>
     </div>
   </div>
 </div>
@@ -205,6 +207,10 @@
   window.onload = async function() {
     document.getElementById('loading').style.display = 'flex';
     
+    // Inicia o relógio assim que a página carrega
+    startClock();
+    setInterval(startClock, 1000);
+    
     try {
         let data = INITIAL_DATA; // Puxado do index.ejs
         
@@ -252,6 +258,19 @@
   window.refreshDashboard = function() {
       window.location.href = '/?refresh=true';
   };
+
+  // Função do Relógio em Tempo Real
+  function startClock() {
+      const clockElement = document.getElementById('lastUpdate');
+      if (clockElement) {
+          clockElement.innerHTML = `<i class="bi bi-clock me-1"></i> ${new Date().toLocaleTimeString('pt-BR', {
+              timeZone: 'America/Sao_Paulo', 
+              hour: '2-digit', 
+              minute: '2-digit', 
+              second: '2-digit'
+          })}`;
+      }
+  }
 
   function init(data) {
     if(data.error) { return; } 
