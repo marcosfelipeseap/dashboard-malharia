@@ -6,6 +6,9 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     
+    <!-- FAVICON: Logo na aba do navegador -->
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     
@@ -306,7 +309,8 @@
       <!-- LOGO E SINO DE NOTIFICAÇÕES -->
       <div class="logo" style="justify-content: space-between; padding-right: 15px;">
           <div style="display: flex; align-items: center; gap: 10px;">
-              <span class="material-icons">dashboard</span><span>DASHBOARD</span>
+              <!-- AQUI FOI ALTERADO: O ícone 'dashboard' foi trocado pela imagem da logo -->
+              <img src="/images/logo.png" alt="Logo" style="height: 60px; width: auto; object-fit: contain;"><span>DASHBOARD</span>
           </div>
           <div style="position: relative; cursor: pointer; display: flex; align-items: center;" onclick="openNotifications()" title="Entregas da Semana" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" style="transition: transform 0.2s;">
               <span class="material-icons" style="font-size: 26px; color: var(--primary);">notifications</span>
