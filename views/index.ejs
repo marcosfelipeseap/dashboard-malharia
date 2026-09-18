@@ -301,6 +301,54 @@
       .btn-notif-sec:hover { background: var(--border); }
       .btn-notif-pri { background: #4CAF50; color: white; }
       .btn-notif-pri:hover { background: #388E3C; }
+
+      /* --- AVISO DE PAINEL ANTIGO --- */
+      .old-panel-banner {
+          background: var(--warning-bg);
+          color: var(--warning-text-dark);
+          border: 1px solid var(--alert-border);
+          padding: 15px 20px;
+          border-radius: 12px;
+          margin-bottom: 25px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 15px;
+          box-shadow: var(--shadow);
+      }
+      .old-panel-banner .msg {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-weight: 600;
+          font-size: 14px;
+      }
+      .btn-novo-painel {
+          background: var(--primary);
+          color: #ffffff;
+          padding: 10px 20px;
+          border-radius: 8px;
+          text-decoration: none;
+          font-weight: 600;
+          font-size: 14px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          transition: 0.2s;
+          border: none;
+      }
+      .btn-novo-painel:hover {
+          filter: brightness(1.2);
+          color: #ffffff;
+      }
+      body.dark-mode .btn-novo-painel {
+          color: #121212;
+      }
+      body.dark-mode .btn-novo-painel:hover {
+          color: #121212;
+      }
+
     </style>
   </head>
   <body>
@@ -338,6 +386,18 @@
 
     <div class="main">
       
+      <!-- INÍCIO DO AVISO DO PAINEL ANTIGO -->
+      <div class="old-panel-banner">
+        <div class="msg">
+          <span class="material-icons" style="font-size: 24px;">warning_amber</span>
+          Aviso: Este é o painel antigo. Um novo painel já está disponível.
+        </div>
+        <a href="https://malhariaseap.com/publico" target="_blank" class="btn-novo-painel">
+          Ir para o Novo Painel <span class="material-icons" style="font-size: 18px;">arrow_forward</span>
+        </a>
+      </div>
+      <!-- FIM DO AVISO -->
+
       <%- include('partials/main') %>
 
       <div id="pageOficina" class="page">
