@@ -3,16 +3,100 @@ const { google } = require('googleapis');
 const NodeCache = require('node-cache');
 const path = require('path');
 const dotenv = require('dotenv');
+const cookieParser = require('cookie-parser');
+const axios = require('axios'); // Caso não tenha, execute npm install axios ou usaremos fetch nativo do Node
 
 dotenv.config();
 const app = express();
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+app.use(express.json());
+app.use(cookieParser());
+
 // Permite que o servidor sirva arquivos estáticos da pasta public (onde está sua logo)
 app.use(express.static(path.join(__dirname, 'public')));
 
 const myCache = new NodeCache({ stdTTL: 600 }); // 10 min
+
+const PORTAL_URL = 'https://menuugtr.vercel.app';
+
+// --- MIDDLEWARE DE PROTEÇÃO SSO (8 HORAS) ---
+async function verificarSSO(req, res, next) {
+    const ssoToken = req.query.sso_token;
+    const currentUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+
+    // 1. Se veio um token fresco na URL (veio do Menu ou redirecionado do login)
+    if (ssoToken) {
+        try {
+            // Valida o token na API do Portal Central
+            const response = await fetch(`${PORTAL_URL}/api/sso/verificar?token=${encodeURIComponent(ssoToken)}`);
+            const dados = await response.json();
+
+            if (dados && dados.valido) {
+                // Salva o token em um cookie seguro por 8 horas
+                res.cookie('seap_sso_malharia', ssoToken, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    maxAge: 8 * 60 * 60 * 1000 // 8 horas
+                });
+
+                // Remove o ?sso_token da barra de endereços para limpar a URL
+                const cleanUrl = req.protocol + '://' + req.get('host') + req.path;
+                return res.redirect(cleanUrl);
+            }
+        } catch (e) {
+            console.error("Erro ao validar SSO:", e.message);
+        }
+    }
+
+    // 2. Se não tem na URL, verifica se o cookie de sessão de 8 horas existe
+    const cookieToken = req.cookies.seap_sso_malharia;
+    if (cookieToken) {
+        try {
+            const response = await fetch(`${PORTAL_URL}/api/sso/verificar?token=${encodeURIComponent(cookieToken)}`);
+            const dados = await response.json();
+            if (dados && dados.valido) {
+                return next(); // Sessão válida!
+            }
+        } catch (e) {}
+    }
+
+    // 3. Não autenticado: Exibe a página elegante de Acesso Restrito com o botão de Login
+    const urlLogin = `${PORTAL_URL}/login?redirect=${encodeURIComponent(currentUrl)}`;
+    
+    return res.status(401).send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Acesso Restrito - SEAP</title>
+            <style>
+                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ecf0f3; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+                .box { background: #fff; padding: 40px 35px; border-radius: 18px; box-shadow: 0 12px 30px rgba(0,0,0,0.12); text-align: center; max-width: 400px; width: 90%; }
+                h3 { color: #044c14; margin-top: 0; font-size: 22px; }
+                p { color: #64748B; font-size: 14px; margin-bottom: 25px; line-height: 1.5; }
+                .btn { display: inline-block; padding: 13px 28px; background: linear-gradient(120deg, #044c14, #0a7d2a); color: #fff; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 15px; transition: transform 0.2s, box-shadow 0.2s; }
+                .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(10, 125, 42, 0.3); }
+            </style>
+            <script>
+                // Tenta redirecionar automaticamente se permitido pelo navegador
+                setTimeout(function() {
+                    window.top.location.href = "${urlLogin}";
+                }, 1500);
+            </script>
+        </head>
+        <body>
+            <div class="box">
+                <h3>🔒 Acesso Restrito</h3>
+                <p>Você precisa estar autenticado no Portal de Sistemas SEAP para visualizar este painel. Redirecionando para o login...</p>
+                <a class="btn" href="${urlLogin}" target="_top">Ir para o Login</a>
+            </div>
+        </body>
+        </html>
+    `);
+}
 
 // --- AUTENTICAÇÃO BLINDADA PARA VERCEL E LOCAL ---
 let auth;
@@ -64,8 +148,6 @@ try {
 function normalizeDate(val) {
     if (val === null || val === undefined || val === "") return "";
     
-    // Agora que usamos UNFORMATTED_VALUE, a planilha envia as datas reais como números (ex: 45580).
-    // Esse bloco captura o ano exato de 2025 ou 2026 direto do núcleo do Google Sheets!
     if (typeof val === 'number' || (typeof val === 'string' && !isNaN(val) && Number(val) > 40000)) {
         let serial = Number(val);
         let utc_days = Math.floor(serial - 25569);
@@ -79,11 +161,9 @@ function normalizeDate(val) {
     let str = String(val).trim().split(' ')[0]; 
     if (str.toLowerCase() === "invalid date") return "";
 
-    // Trata formato DD/MM/YYYY ou YYYY/MM/DD
     if (str.includes('/')) {
         let parts = str.split('/');
         if (parts.length === 2) {
-            // Removido o 2025 forçado, voltando para o original
             return `${parts[0].trim().padStart(2, '0')}/${parts[1].trim().padStart(2, '0')}/${new Date().getFullYear()}`;
         }
         if (parts.length >= 3) {
@@ -115,7 +195,7 @@ function parseNumber(val) {
         let clean = val.replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
         return parseFloat(clean) || 0;
     }
-    return val || 0; // Se vier como número puro da API, passa direto
+    return val || 0;
 }
 
 // --- LÓGICA DE BUSCA DE DADOS ---
@@ -129,7 +209,6 @@ async function fetchDataFromSheets() {
         'DEMANDA - UPFEM!A:M', 'Fardamento Interno - Novo!A:G', 'Fardamento Servidor!A:G'
     ];
     
-    // MUDANÇA CRUCIAL: UNFORMATTED_VALUE envia a data verdadeira em formato numérico
     const responses = await Promise.all(ranges.map(range => 
         sheets.spreadsheets.values.get({ spreadsheetId, range, valueRenderOption: 'UNFORMATTED_VALUE' })
             .catch(() => ({ data: { values: [] } }))
@@ -256,8 +335,8 @@ function processFardamentoSeapData(values) {
     }).filter(i => i !== null && i.tipo !== "");
 } 
 
-// --- ROTAS ---
-app.get('/', async (req, res) => {
+// --- ROTAS (PROTEGIDAS PELO MIDDLEWARE SSO) ---
+app.get('/', verificarSSO, async (req, res) => {
     try {
         const forceRefresh = req.query.refresh === 'true';
         let data = myCache.get('MALHARIA_DATA');
@@ -274,7 +353,7 @@ app.get('/', async (req, res) => {
     }
 });
 
-app.get('/api/data', async (req, res) => {
+app.get('/api/data', verificarSSO, async (req, res) => {
     try {
         const data = await fetchDataFromSheets();
         myCache.set('MALHARIA_DATA', data);
