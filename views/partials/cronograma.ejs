@@ -1,54 +1,13 @@
 <style>
   .cronograma-wrapper {
-    animation: fadeIn 0.4s ease;
+    animation: fadeEffect 0.4s ease;
     position: relative;
     width: 100%;
   }
 
-  .calendar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    background: var(--surface);
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: var(--shadow);
-    border: var(--card-border);
-  }
-
-  .month-label { 
-    font-size: 20px; 
-    font-weight: 700; 
-    color: var(--primary); 
-    text-transform: uppercase; 
-    letter-spacing: 0.5px;
-    text-align: center;
-  }
-  
-  .cal-btn { 
-    background: var(--primary-light); 
-    color: var(--primary); 
-    border: none; 
-    padding: 10px 14px; 
-    border-radius: 8px; 
-    cursor: pointer; 
-    transition: 0.2s; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center;
-    white-space: nowrap;
-  }
-  
-  .cal-btn:hover { 
-    background: var(--primary); 
-    color: #fff; 
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  }
-
   .calendar-grid {
     display: grid;
-    grid-template-columns: repeat(7, 1fr); /* 7 colunas fixas sempre */
+    grid-template-columns: repeat(7, 1fr);
     gap: 10px;
     width: 100%;
   }
@@ -59,19 +18,18 @@
     color: var(--text-muted);
     padding: 10px;
     text-transform: uppercase;
-    font-size: 12px;
-    background: var(--bg-body);
-    border-radius: 6px;
+    font-size: 0.85rem;
+    background: var(--input-bg);
+    border-radius: 8px;
     margin-bottom: 5px;
   }
 
   .day-cell {
-    background: var(--surface);
+    background: var(--card-bg);
     min-height: 140px;
-    /* REMOVIDO o max-height e overflow para a caixa crescer o quanto precisar */
     height: auto; 
     border-radius: 12px;
-    border: var(--card-border);
+    border: 1px solid var(--border-color);
     padding: 8px;
     position: relative;
     transition: 0.2s;
@@ -80,14 +38,14 @@
     flex-direction: column;
   }
   
-  .day-cell:hover { border-color: var(--primary); }
-  .day-cell.today { border: 2px solid var(--primary); background: var(--primary-light); }
-  .day-cell.today .day-number { color: var(--primary); }
-  .day-cell.other-month { opacity: 0.5; background: var(--bg-body); border: 1px dashed var(--border); box-shadow: none; }
+  .day-cell:hover { border-color: var(--accent); }
+  .day-cell.today { border: 2px solid var(--accent); background: var(--input-bg); }
+  .day-cell.today .day-number { color: var(--accent); }
+  .day-cell.other-month { opacity: 0.5; background: var(--input-bg); border: 1px dashed var(--border-color); box-shadow: none; }
   
   .day-number { 
     font-weight: 700; 
-    font-size: 14px; 
+    font-size: 0.95rem; 
     margin-bottom: 8px; 
     color: var(--text-muted); 
     text-align: right;
@@ -95,34 +53,32 @@
   }
 
   .event-card {
-    background: #fff;
-    border-left: 4px solid var(--primary);
+    background: var(--input-bg);
+    border-left: 4px solid var(--accent);
     padding: 8px;
     margin-bottom: 6px;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
-    border: 1px solid var(--border);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border-top: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
     height: auto;
   }
   
-  body.dark-mode .event-card { background: #2c2c2c; }
-  
   .event-card:hover {
-    filter: brightness(0.95);
     transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow);
+    border-color: var(--accent);
   }
 
   .event-summary { display: flex; flex-direction: column; gap: 6px; }
   
   .event-orgao {
-    font-size: 11px;
+    font-size: 0.75rem;
     font-weight: 700;
     color: var(--text-main);
     line-height: 1.2;
-    /* PERMITE quebra de linha em telas pequenas */
     white-space: normal;
     word-break: break-word; 
   }
@@ -132,37 +88,38 @@
     justify-content: space-between;
     align-items: center;
     gap: 4px;
-    flex-wrap: wrap; /* Permite que os badges caiam para a linha de baixo se não couberem */
+    flex-wrap: wrap; 
   }
   
   .badge-pend, .badge-done {
-    font-size: 10px;
+    font-size: 0.7rem;
     font-weight: 700;
-    padding: 3px 6px;
-    border-radius: 10px;
+    padding: 4px 8px;
+    border-radius: 12px;
     white-space: normal;
     text-align: center;
     flex: 1;
+    text-transform: uppercase;
   }
   
-  .badge-pend { background: var(--danger-bg); color: var(--danger-text); }
-  .badge-done { background: var(--success-bg); color: var(--success-text); border: 1px solid var(--success-text); }
+  .badge-pend { background: var(--danger-bg); color: var(--danger); }
+  .badge-done { background: var(--success-bg); color: var(--success); }
 
   .badge-proc {
-    font-size: 10px;
+    font-size: 0.7rem;
     color: var(--text-muted);
-    background: var(--bg-body);
-    padding: 3px 5px;
-    border-radius: 4px;
-    font-weight: 600;
-    /* MOSTRA O NÚMERO TODO quebrando em várias linhas se necessário */
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 3px 6px;
+    border-radius: 6px;
+    font-weight: 700;
     white-space: normal;
     word-break: break-all;
     width: 100%;
     text-align: center;
   }
 
-  /* --- MODAL --- */
+  /* --- MODAL PADRÃO SERRALHERIA --- */
   .crono-modal {
     display: none; 
     position: fixed; 
@@ -173,19 +130,20 @@
     height: 100%; 
     background-color: rgba(0,0,0,0.6); 
     backdrop-filter: blur(2px);
-    animation: fadeIn 0.3s;
+    animation: fadeEffect 0.3s;
     align-items: center;
     justify-content: center;
+    padding: 15px;
   }
 
   .crono-modal-content {
-    background-color: var(--surface);
+    background-color: var(--card-bg);
     padding: 0;
-    border: 1px solid var(--border);
-    width: 600px;
-    max-width: 95%;
-    border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    border: 1px solid var(--border-color);
+    width: 100%;
+    max-width: 650px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -194,101 +152,73 @@
   }
 
   .crono-header {
-    background: var(--primary);
-    color: white;
-    padding: 15px 20px;
+    background: var(--input-bg);
+    color: var(--text-main);
+    padding: 20px 25px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 1px solid var(--border-color);
   }
 
-  .crono-title { font-size: 18px; font-weight: 700; word-break: break-word; padding-right: 15px; }
-  .crono-close { cursor: pointer; color: white; opacity: 0.8; transition: 0.2s; }
-  .crono-close:hover { opacity: 1; transform: scale(1.1); }
+  .crono-title { font-size: 1.2rem; font-weight: 800; text-transform: uppercase; }
+  .crono-close { cursor: pointer; color: var(--text-muted); transition: 0.2s; }
+  .crono-close:hover { color: var(--danger); transform: scale(1.1); }
 
-  .crono-body {
-    padding: 20px;
-    overflow-y: auto;
-  }
+  .crono-body { padding: 25px; overflow-y: auto; }
 
   .crono-info-row {
     display: flex;
     gap: 20px;
     margin-bottom: 20px;
     padding-bottom: 15px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px dashed var(--border-color);
   }
   
   .crono-info-item { display: flex; flex-direction: column; flex: 1; }
-  .crono-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
-  .crono-value { font-size: 14px; font-weight: 500; color: var(--text-main); }
+  .crono-label { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
+  .crono-value { font-size: 0.95rem; font-weight: 800; color: var(--text-main); }
 
   .crono-item-list { display: flex; flex-direction: column; gap: 10px; }
   
   .crono-item-row {
-    background: var(--bg-body);
-    padding: 10px 15px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
+    background: var(--input-bg);
+    padding: 12px 15px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 15px;
   }
   
-  .crono-prod-name { font-weight: 600; font-size: 14px; color: var(--text-main); }
-  .crono-prod-detail { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .crono-prod-name { font-weight: 700; font-size: 0.95rem; color: var(--text-main); }
+  .crono-prod-detail { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; font-weight: 500;}
   
-  .status-tag { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; text-align: center;}
-  .st-pend { background: var(--danger-bg); color: var(--danger-text); }
-  .st-done { background: var(--success-bg); color: var(--success-text); }
+  .status-tag { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; text-align: center;}
+  .st-pend { background: var(--danger-bg); color: var(--danger); }
+  .st-done { background: var(--success-bg); color: var(--success); }
 
-  /* ========================================= */
-  /* COMPRESSÃO EXTREMA PARA TELAS MENORES     */
-  /* (Empilha informações no card para caber)  */
-  /* ========================================= */
   @media (max-width: 900px) {
     .calendar-grid { gap: 4px; }
-    .weekday-header { font-size: 10px; padding: 6px 2px; word-break: break-word; }
-    .day-cell { padding: 4px; min-height: 100px; }
-    
-    .event-card { 
-      padding: 4px; 
-      border-left-width: 3px; 
-      margin-bottom: 4px;
-    }
-    
-    .event-orgao { font-size: 10px; }
-    
-    .event-meta {
-      flex-direction: column; /* Empilha os blocos dentro do card */
-      align-items: stretch;
-      gap: 4px;
-    }
-    
-    .badge-proc { font-size: 9px; padding: 4px; }
-    .badge-pend, .badge-done { font-size: 9px; padding: 4px; }
+    .weekday-header { font-size: 0.65rem; padding: 6px 2px; word-break: break-word; }
+    .day-cell { padding: 4px; min-height: 100px; border-radius: 8px;}
+    .event-card { padding: 4px; border-left-width: 3px; margin-bottom: 4px; }
+    .event-orgao { font-size: 0.65rem; }
+    .event-meta { flex-direction: column; align-items: stretch; gap: 4px; }
+    .badge-proc { font-size: 0.6rem; padding: 4px; }
+    .badge-pend, .badge-done { font-size: 0.6rem; padding: 4px; }
   }
 
   @media (max-width: 600px) {
-    .calendar-header { flex-direction: column; gap: 10px; padding: 15px; }
-    .month-label { order: -1; font-size: 18px; }
-    .calendar-header .cal-btn { width: 100%; padding: 10px; }
-    
     .calendar-grid { gap: 2px; }
-    .weekday-header { font-size: 9px; padding: 4px 0; }
-    
+    .weekday-header { font-size: 0.6rem; padding: 4px 0; }
     .day-cell { min-height: 80px; border-radius: 6px; padding: 2px; }
-    
     .event-card { padding: 4px; border-left-width: 2px; border-radius: 4px;}
-    .event-orgao { font-size: 9px; }
-    
-    .badge-proc { font-size: 8px; }
-    .badge-pend, .badge-done { font-size: 8px; }
-
-    .day-number { font-size: 11px; padding-right: 2px; }
-
-    /* Modal no Mobile */
+    .event-orgao { font-size: 0.6rem; }
+    .badge-proc { font-size: 0.55rem; }
+    .badge-pend, .badge-done { font-size: 0.55rem; }
+    .day-number { font-size: 0.75rem; padding-right: 2px; }
     .crono-info-row { flex-wrap: wrap; gap: 10px; }
     .crono-info-item { min-width: 45%; }
     .crono-item-row { flex-direction: column; align-items: flex-start; }
@@ -308,10 +238,10 @@
 </div>
 
 <div class="cronograma-wrapper">
-  <div class="calendar-header">
-    <button class="cal-btn" onclick="changeMonth(-1)"><span class="material-icons">chevron_left</span> Anterior</button>
-    <div id="monthDisplay" class="month-label"></div>
-    <button class="cal-btn" onclick="changeMonth(1)">Próximo <span class="material-icons">chevron_right</span></button>
+  <div class="slide-header">
+    <button class="theme-btn" onclick="changeMonth(-1)"><span class="material-icons">chevron_left</span> Anterior</button>
+    <div id="monthDisplay" style="font-size: 1.4rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; text-align: center;"></div>
+    <button class="theme-btn" onclick="changeMonth(1)">Próximo <span class="material-icons">chevron_right</span></button>
   </div>
 
   <div class="calendar-grid" id="calendarGrid">
@@ -450,7 +380,7 @@
             <div>
                 <div class="crono-prod-name">${item.produto}</div>
                 <div class="crono-prod-detail">Tamanho: ${item.tamanho} | Status: ${item.status || '-'}</div>
-                ${item.obs ? `<div style="font-size:11px; color:#ef5350; margin-top:3px;">Obs: ${item.obs}</div>` : ''}
+                ${item.obs ? `<div style="font-size:0.75rem; color:var(--danger); margin-top:3px; font-weight: 600;">Obs: ${item.obs}</div>` : ''}
             </div>
             <div style="text-align:right">
                 ${itemStatusTag}
@@ -466,7 +396,7 @@
             </div>
             <div class="crono-info-item">
                 <span class="crono-label">Total Pendente</span>
-                <span class="crono-value" style="color:${isTotalDone ? 'var(--success-text)' : 'var(--danger-text)'}">${isTotalDone ? '0' : data.totalPendente}</span>
+                <span class="crono-value" style="color:${isTotalDone ? 'var(--success)' : 'var(--danger)'}">${isTotalDone ? '0' : data.totalPendente}</span>
             </div>
             <div class="crono-info-item">
                 <span class="crono-label">Situação</span>

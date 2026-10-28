@@ -1,163 +1,114 @@
-<style>
-  .rx-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+<div class="slide-header">
+  <div class="slide-title"><span class="material-icons">store</span> Raio X da Oficina</div>
   
-  /* BANNER DA SEMANA - NAVEGADOR E 7 DIAS */
-  .rx-week-banner { background: linear-gradient(135deg, var(--primary), #0D47A1); color: white; border-radius: 12px; padding: 25px 30px; margin-bottom: 25px; display: flex; flex-direction: column; gap: 20px; box-shadow: var(--shadow); }
-  .rx-week-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 20px; }
-  
-  .rx-week-nav-container { display: flex; align-items: center; gap: 15px; }
-  .rx-week-nav-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 8px; padding: 8px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
-  .rx-week-nav-btn:hover { background: rgba(255,255,255,0.3); transform: scale(1.05); }
-  
-  .rx-week-stats { display: flex; gap: 15px; flex-wrap: wrap; }
-  .rx-week-stat { display: flex; flex-direction: column; align-items: center; background: rgba(255,255,255,0.15); padding: 12px 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
-  .rx-week-stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.9; font-weight: 600; margin-bottom: 5px; }
-  .rx-week-stat-value { font-size: 24px; font-weight: 700; }
-  
-  /* CARDS DOS 7 DIAS DA SEMANA */
-  .rx-week-days-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
-  .rx-day-card { background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px; font-size: 12px; display: flex; flex-direction: column; gap: 8px; border: 1px solid rgba(255,255,255,0.1); transition: 0.2s; }
-  .rx-day-card:hover { background: rgba(0,0,0,0.3); }
-  .rx-day-card.missing { opacity: 0.6; border-style: dashed; justify-content: center; align-items: center; text-align: center; }
-  .rx-day-card.weekend { opacity: 0.4; } 
-  .rx-day-header { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; }
-  .rx-day-prod { display: flex; justify-content: space-between; align-items: center; }
-  .rx-day-items { opacity: 0.9; line-height: 1.4; font-size: 11px; }
-  .rx-day-just { background: rgba(244, 67, 54, 0.25); padding: 6px; border-radius: 6px; color: #FFCDD2; font-size: 10px; border-left: 2px solid #EF5350; }
-  
-  body.dark-mode .rx-week-banner { background: linear-gradient(135deg, #1565C0, #001e3c); }
-
-  .rx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
-  .rx-card { background: var(--surface); padding: 20px 15px; border-radius: 12px; border: var(--card-border); box-shadow: var(--shadow); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-  .rx-card-title { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 8px; letter-spacing: 0.5px; }
-  .rx-card-value { font-size: 26px; font-weight: 700; color: var(--primary); line-height: 1.1; }
-  .rx-card-sub { font-size: 11px; color: var(--text-muted); margin-top: 5px; }
-  
-  .rx-table-wrapper { background: var(--surface); border-radius: 12px; border: var(--card-border); box-shadow: var(--shadow); overflow: hidden; margin-top: 20px; }
-  .rx-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .rx-table th { background: var(--primary-light); color: var(--primary); text-transform: uppercase; font-size: 11px; font-weight: 700; padding: 15px; text-align: left; }
-  .rx-table td { padding: 15px; border-bottom: 1px dashed var(--border); color: var(--text-main); vertical-align: top; }
-  .rx-table tr:last-child td { border-bottom: none; }
-  .rx-table tr:hover td { background: var(--bg-body); }
-  
-  body.dark-mode .rx-table th { background: #263238; color: var(--primary); }
-
-  .rx-history-search { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid var(--border); background: var(--surface); flex-wrap: wrap; gap: 15px; }
-  .rx-history-search input { width: 350px; padding: 10px 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-body); color: var(--text-main); font-size: 13px; outline: none; transition: 0.2s; }
-  .rx-history-search input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
-</style>
-
-<div class="rx-header">
-  <h2 style="margin: 0;">Raio X da Oficina</h2>
-  
-  <div class="filter-group" style="width: 300px; position: relative;">
-    <div class="custom-dropdown" id="rxDropdown">
-        <div class="custom-dropdown-btn" onclick="toggleRxDropdown()" style="height: 42px;">
-          <span id="rxSelectedText" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; max-width:240px; font-weight: 600; color: var(--primary);">Selecione uma Oficina</span>
+  <div style="width: 300px; max-width: 100%; position: relative;">
+    <div class="custom-dropdown" id="rxDropdown" style="width: 100%;">
+        <div class="drop-btn" onclick="toggleRxDropdown()" style="height: 48px; border-radius: 14px !important;">
+          <span id="rxSelectedText" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; max-width:240px; font-weight: 700; color: var(--accent); text-transform: uppercase;">Selecione uma Oficina</span>
           <span class="material-icons" style="font-size:18px">arrow_drop_down</span>
         </div>
-        <div class="custom-dropdown-content" id="rxDropdownContent" style="width: 400px; right: 0; left: auto;">
-          <div class="custom-dropdown-search">
-              <input type="text" id="rxSearchInput" placeholder="Pesquisar oficina..." onkeyup="filterRxOptions(event)" onclick="event.stopPropagation()">
+        <div class="dropdown-content" id="rxDropdownContent" style="width: 100%; right: 0; left: auto;">
+          <div style="padding: 10px;">
+              <input type="text" id="rxSearchInput" class="dropdown-search" placeholder="Pesquisar oficina..." onkeyup="filterRxOptions(event)" onclick="event.stopPropagation()">
           </div>
-          <div class="custom-options-wrapper" id="rxOptionsContainer"></div>
+          <div id="rxOptionsContainer"></div>
         </div>
     </div>
     <input type="hidden" id="rxOficinaSelect" onchange="renderPageOficina()">
   </div>
 </div>
 
-<div class="rx-week-banner" id="rxWeekBanner" style="display: none;">
-  <div class="rx-week-top">
-    <div class="rx-week-nav-container">
-      <button class="rx-week-nav-btn" onclick="changeRxWeek(-1)" title="Semana Anterior"><span class="material-icons">chevron_left</span></button>
+<div id="rxWeekBanner" style="display: none; background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: white; border-radius: 20px; padding: 25px 30px; margin-bottom: 25px; flex-direction: column; gap: 20px; box-shadow: var(--shadow);">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 20px;">
+    <div style="display: flex; align-items: center; gap: 15px;">
+      <button class="theme-btn" style="color:white; border-color:rgba(255,255,255,0.3); padding: 8px !important;" onclick="changeRxWeek(-1)" title="Semana Anterior"><span class="material-icons">chevron_left</span></button>
       <div style="text-align: center;">
-        <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; color: #90CAF9; margin-bottom: 2px;">Resumo Semanal</div>
-        <div style="font-size: 24px; font-weight: 700;" id="rxSemanaNum">--</div>
-        <div style="font-size: 13px; opacity: 0.9;" id="rxSemanaDatas">-- a --</div>
+        <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #90CAF9; margin-bottom: 2px;">Resumo Semanal</div>
+        <div style="font-size: 1.5rem; font-weight: 800;" id="rxSemanaNum">--</div>
+        <div style="font-size: 0.85rem; font-weight: 500;" id="rxSemanaDatas">-- a --</div>
       </div>
-      <button class="rx-week-nav-btn" onclick="changeRxWeek(1)" title="Próxima Semana"><span class="material-icons">chevron_right</span></button>
+      <button class="theme-btn" style="color:white; border-color:rgba(255,255,255,0.3); padding: 8px !important;" onclick="changeRxWeek(1)" title="Próxima Semana"><span class="material-icons">chevron_right</span></button>
       
-      <button class="btn-notif btn-notif-pri" style="margin-left: 15px; font-size: 12px; padding: 6px 12px;" onclick="generateSemanaRelatorio()"><i class="bi bi-whatsapp"></i> Relatório da Semana</button>
+      <button class="theme-btn" style="margin-left: 15px; font-weight:700; color:white; background:#4CAF50; border:none;" onclick="generateSemanaRelatorio()"><i class="bi bi-whatsapp" style="margin-right: 5px;"></i> Relatório</button>
       
     </div>
-    <div class="rx-week-stats">
-      <div class="rx-week-stat">
-        <div class="rx-week-stat-label">Produção</div>
-        <div class="rx-week-stat-value" id="rxWeekProd">0</div>
+    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+      <div style="display: flex; flex-direction: column; align-items: center; background: rgba(255,255,255,0.15); padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+        <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; margin-bottom: 5px;">Produção</div>
+        <div style="font-size: 1.5rem; font-weight: 800;" id="rxWeekProd">0</div>
       </div>
-      <div class="rx-week-stat">
-        <div class="rx-week-stat-label">Meta</div>
-        <div class="rx-week-stat-value" id="rxWeekMeta">0</div>
+      <div style="display: flex; flex-direction: column; align-items: center; background: rgba(255,255,255,0.15); padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+        <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; margin-bottom: 5px;">Meta</div>
+        <div style="font-size: 1.5rem; font-weight: 800;" id="rxWeekMeta">0</div>
       </div>
-      <div class="rx-week-stat">
-        <div class="rx-week-stat-label">Performance</div>
-        <div class="rx-week-stat-value" id="rxWeekPerf">0%</div>
+      <div style="display: flex; flex-direction: column; align-items: center; background: rgba(255,255,255,0.15); padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+        <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; margin-bottom: 5px;">Performance</div>
+        <div style="font-size: 1.5rem; font-weight: 800;" id="rxWeekPerf">0%</div>
       </div>
-      <div class="rx-week-stat">
-        <div class="rx-week-stat-label">Dias Trabalhados</div>
-        <div class="rx-week-stat-value" id="rxWeekDays">0</div>
+      <div style="display: flex; flex-direction: column; align-items: center; background: rgba(255,255,255,0.15); padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+        <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; margin-bottom: 5px;">Dias</div>
+        <div style="font-size: 1.5rem; font-weight: 800;" id="rxWeekDays">0</div>
       </div>
     </div>
   </div>
   
-  <div class="rx-week-days-grid" id="rxWeekDaysGrid">
+  <div id="rxWeekDaysGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px;">
   </div>
 </div>
 
-<div class="rx-grid">
-  <div class="rx-card" style="border-bottom: 4px solid #1E88E5;">
-    <div class="rx-card-title">Produção Acumulada</div>
-    <div class="rx-card-value" id="rxTotalProd">0</div>
-    <div class="rx-card-sub">Peças finalizadas no período filtrado</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px;">
+  <div class="chart-card" style="border-bottom: 5px solid #1E88E5; padding: 25px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+    <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 800; margin-bottom: 8px; letter-spacing: 0.5px;">Produção Acumulada</div>
+    <div style="font-size: 2rem; font-weight: 800; color: var(--accent); line-height: 1.1;" id="rxTotalProd">0</div>
+    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px; font-weight: 600;">Peças finalizadas</div>
   </div>
   
-  <div class="rx-card" style="border-bottom: 4px solid #8E24AA;">
-    <div class="rx-card-title">Performance Global</div>
-    <div class="rx-card-value" id="rxPerfGeral">0%</div>
-    <div class="rx-card-sub">Produção Total vs Meta Total</div>
+  <div class="chart-card" style="border-bottom: 5px solid #8E24AA; padding: 25px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+    <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 800; margin-bottom: 8px; letter-spacing: 0.5px;">Performance Global</div>
+    <div style="font-size: 2rem; font-weight: 800; color: var(--accent); line-height: 1.1;" id="rxPerfGeral">0%</div>
+    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px; font-weight: 600;">Produção vs Meta Total</div>
   </div>
 
-  <div class="rx-card" style="border-bottom: 4px solid #43A047;">
-    <div class="rx-card-title">Média de Produção Diária</div>
-    <div class="rx-card-value" id="rxAvgProd">0</div>
-    <div class="rx-card-sub">Quantidade de peças por dia</div>
+  <div class="chart-card" style="border-bottom: 5px solid #43A047; padding: 25px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+    <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 800; margin-bottom: 8px; letter-spacing: 0.5px;">Média de Produção Diária</div>
+    <div style="font-size: 2rem; font-weight: 800; color: var(--accent); line-height: 1.1;" id="rxAvgProd">0</div>
+    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px; font-weight: 600;">Quantidade de peças por dia</div>
   </div>
 
-  <div class="rx-card" style="border-bottom: 4px solid #00ACC1;">
-    <div class="rx-card-title">Capacidade de Mão de Obra</div>
-    <div class="rx-card-value" id="rxIntVinc">0</div>
-    <div class="rx-card-sub"><span id="rxIntRemun" style="font-weight:bold; color:var(--text-main)">0</span> Internos Remunerados</div>
+  <div class="chart-card" style="border-bottom: 5px solid #00ACC1; padding: 25px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+    <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 800; margin-bottom: 8px; letter-spacing: 0.5px;">Capacidade (Mão de Obra)</div>
+    <div style="font-size: 2rem; font-weight: 800; color: var(--accent); line-height: 1.1;" id="rxIntVinc">0</div>
+    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px; font-weight: 600;"><span id="rxIntRemun" style="font-weight:800; color:var(--text-main)">0</span> Internos Remunerados</div>
   </div>
 </div>
 
-<div class="chart-card" style="height: 350px;">
+<div class="chart-card" style="height: 350px; padding: 25px; margin-bottom: 25px;">
   <canvas id="rxChart"></canvas>
 </div>
 
-<div class="rx-table-wrapper">
-  <div class="rx-history-search">
+<div class="chart-card" style="padding: 0; overflow: hidden; margin-top: 20px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 25px; border-bottom: 1px solid var(--border-color); background: var(--card-bg); flex-wrap: wrap; gap: 15px;">
     <div>
-        <span style="font-weight: 700; display: block; font-size: 15px;">Histórico Detalhado da Produção</span>
-        <span style="font-size: 12px; font-weight: 400; color: var(--text-muted); margin-top: 2px; display: block;">Acompanhamento diário da oficina, do mais recente para o mais antigo.</span>
+        <span style="font-weight: 800; display: block; font-size: 1.1rem; text-transform: uppercase; color: var(--text-main);">Histórico Detalhado</span>
+        <span style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); margin-top: 2px; display: block;">Acompanhamento diário da oficina, do mais recente para o mais antigo.</span>
     </div>
     <div>
-        <input type="text" id="rxDateSearch" placeholder="🔍 Pesquisar por data (ex: 15/04), peça ou observação..." onkeyup="filterRxHistory()">
+        <input type="text" id="rxDateSearch" placeholder="🔍 Pesquisar por data (ex: 15/04), peça ou observação..." onkeyup="filterRxHistory()" style="width: 350px; max-width: 100%; padding: 12px 18px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--input-bg); color: var(--text-main); font-size: 0.85rem; outline: none; transition: 0.2s;">
     </div>
   </div>
   <div style="max-height: 600px; overflow-y: auto;">
-    <table class="rx-table">
+    <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
       <thead>
         <tr>
-          <th style="width: 140px;">Data e Status</th>
-          <th style="width: 180px;">Produção e Meta</th>
-          <th>Itens Produzidos</th>
-          <th style="width: 190px; text-align: center;">Mão de Obra (Internos)</th>
-          <th style="width: 250px;">Observações</th>
+          <th style="background: var(--input-bg); color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; font-weight: 800; padding: 15px 20px; text-align: left; width: 140px; border-bottom: 1px solid var(--border-color);">Data e Status</th>
+          <th style="background: var(--input-bg); color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; font-weight: 800; padding: 15px 20px; text-align: left; width: 180px; border-bottom: 1px solid var(--border-color);">Produção e Meta</th>
+          <th style="background: var(--input-bg); color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; font-weight: 800; padding: 15px 20px; text-align: left; border-bottom: 1px solid var(--border-color);">Itens Produzidos</th>
+          <th style="background: var(--input-bg); color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; font-weight: 800; padding: 15px 20px; text-align: center; width: 190px; border-bottom: 1px solid var(--border-color);">Mão de Obra</th>
+          <th style="background: var(--input-bg); color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; font-weight: 800; padding: 15px 20px; text-align: left; width: 250px; border-bottom: 1px solid var(--border-color);">Observações</th>
         </tr>
       </thead>
       <tbody id="rxTableBody">
-        <tr><td colspan="5" style="text-align:center; padding: 30px; color:var(--text-muted)">Selecione uma oficina no topo da página.</td></tr>
+        <tr><td colspan="5" style="text-align:center; padding: 30px; color:var(--text-muted); font-weight:600;">Selecione uma oficina no topo da página.</td></tr>
       </tbody>
     </table>
   </div>
@@ -283,7 +234,9 @@
       optsContainer.innerHTML = '';
       oficinas.forEach(of => {
           let optDiv = document.createElement('div');
-          optDiv.className = 'custom-option';
+          optDiv.className = 'check-item';
+          optDiv.style.borderBottom = '1px dashed var(--border-color)';
+          optDiv.style.fontWeight = '600';
           optDiv.innerText = of;
           optDiv.onclick = (e) => {
               e.stopPropagation();
@@ -313,7 +266,7 @@
   function filterRxOptions(e) {
       if (e) e.stopPropagation();
       let query = document.getElementById('rxSearchInput').value.toLowerCase();
-      let opts = document.querySelectorAll('#rxOptionsContainer .custom-option');
+      let opts = document.querySelectorAll('#rxOptionsContainer .check-item');
       opts.forEach(opt => {
           if (opt.innerText.toLowerCase().includes(query)) opt.style.display = 'block';
           else opt.style.display = 'none';
@@ -385,47 +338,47 @@
               let isInsumo = inf.prod === 0 && inf.justs.some(j => typeof isSemInsumo === 'function' ? isSemInsumo(j) : false);
 
               let statusBadge = '';
-              if(bateu) statusBadge = '<span style="background:#4CAF50; color:white; padding:3px 6px; border-radius:4px; font-size:9px; font-weight:700;">OK</span>';
-              else if(isInsumo) statusBadge = '<span style="background:#FF9800; color:white; padding:3px 6px; border-radius:4px; font-size:9px; font-weight:700;">S/I</span>';
-              else statusBadge = '<span style="background:#EF5350; color:white; padding:3px 6px; border-radius:4px; font-size:9px; font-weight:700;">FALHA</span>';
+              if(bateu) statusBadge = '<span style="background:#4CAF50; color:white; padding:4px 8px; border-radius:6px; font-size:0.65rem; font-weight:800;">OK</span>';
+              else if(isInsumo) statusBadge = '<span style="background:#FF9800; color:white; padding:4px 8px; border-radius:6px; font-size:0.65rem; font-weight:800;">S/I</span>';
+              else statusBadge = '<span style="background:#EF5350; color:white; padding:4px 8px; border-radius:6px; font-size:0.65rem; font-weight:800;">FALHA</span>';
 
               let perc = inf.meta > 0 ? Math.round((inf.prod/inf.meta)*100) : (isInsumo ? 0 : 100);
 
-              let itemsList = inf.items.map(it => `<div style="margin-bottom:3px;"><b>${it.producaoDia}x</b> <span style="opacity:0.9">${it.item}</span></div>`).join('');
+              let itemsList = inf.items.map(it => `<div style="margin-bottom:3px; font-size:0.75rem;"><b>${it.producaoDia}x</b> <span style="opacity:0.9">${it.item}</span></div>`).join('');
               
               let justHtml = '';
               let uniqJ = [...new Set(inf.justs)].filter(j => j && j.trim() !== "");
               if(!bateu) {
                   let txtJust = uniqJ.length > 0 ? uniqJ.join(', ') : 'Não informado';
-                  justHtml = `<div class="rx-day-just"><b style="color:white;">Motivo:</b> ${txtJust}</div>`;
+                  justHtml = `<div style="background: rgba(244, 67, 54, 0.25); padding: 6px 10px; border-radius: 8px; color: #FFCDD2; font-size: 0.7rem; border-left: 3px solid #EF5350; margin-top:5px;"><b style="color:white;">Motivo:</b> ${txtJust}</div>`;
               }
 
               weekDaysHtml += `
-              <div class="rx-day-card">
-                  <div class="rx-day-header">
-                      <span>${dayName} <span style="opacity:0.6; font-size:10px; font-weight:400;">${shortDate}</span></span>
+              <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; gap: 8px; border: 1px solid rgba(255,255,255,0.1); transition: 0.2s;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
+                      <span>${dayName} <span style="opacity:0.6; font-size:0.65rem; font-weight:500;">${shortDate}</span></span>
                       ${statusBadge}
                   </div>
-                  <div class="rx-day-prod">
-                      <span style="font-size:16px; font-weight:700;">${inf.prod} <span style="font-size:10px; font-weight:400; opacity:0.6;">/ ${inf.meta} m.</span></span>
-                      <span style="font-weight:700; opacity:0.9; font-size: 12px;">${perc}%</span>
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <span style="font-size:1.2rem; font-weight:800;">${inf.prod} <span style="font-size:0.75rem; font-weight:500; opacity:0.6;">/ ${inf.meta} m.</span></span>
+                      <span style="font-weight:800; opacity:0.9; font-size: 0.9rem;">${perc}%</span>
                   </div>
-                  <div class="rx-day-items">${itemsList}</div>
+                  <div style="opacity: 0.9; line-height: 1.4; margin-top:5px;">${itemsList}</div>
                   ${justHtml}
               </div>`;
 
           } else {
               if (isWeekend) {
                   weekDaysHtml += `
-                  <div class="rx-day-card missing weekend">
-                      <div style="font-weight:700; margin-bottom:4px;">${dayName} <span style="opacity:0.6; font-size:10px; font-weight:400;">${shortDate}</span></div>
-                      <div style="opacity:0.8; font-style:italic;">Sem Expediente</div>
+                  <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; gap: 8px; border: 1px dashed rgba(255,255,255,0.2); justify-content: center; align-items: center; text-align: center; opacity: 0.5;">
+                      <div style="font-weight:800; margin-bottom:4px; font-size:0.85rem;">${dayName} <span style="opacity:0.6; font-size:0.65rem; font-weight:500;">${shortDate}</span></div>
+                      <div style="opacity:0.8; font-style:italic; font-size:0.75rem;">Sem Expediente</div>
                   </div>`;
               } else {
                   weekDaysHtml += `
-                  <div class="rx-day-card missing">
-                      <div style="font-weight:700; margin-bottom:4px;">${dayName} <span style="opacity:0.6; font-size:10px; font-weight:400;">${shortDate}</span></div>
-                      <div style="opacity:0.8; font-style:italic;">Sem Relatório</div>
+                  <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; gap: 8px; border: 1px dashed rgba(255,255,255,0.2); justify-content: center; align-items: center; text-align: center; opacity: 0.7;">
+                      <div style="font-weight:800; margin-bottom:4px; font-size:0.85rem;">${dayName} <span style="opacity:0.6; font-size:0.65rem; font-weight:500;">${shortDate}</span></div>
+                      <div style="opacity:0.8; font-style:italic; font-size:0.75rem;">Sem Relatório</div>
                   </div>`;
               }
           }
@@ -526,45 +479,45 @@
           else if(isInsumo) { statusText = 'SEM INSUMO'; statusClass = 'insumo'; }
 
           let perc = inf.meta > 0 ? Math.round((inf.prod / inf.meta) * 100) : (isInsumo ? 0 : 100);
-          let percColor = bateu ? 'var(--success-text)' : (isInsumo ? 'var(--warning-text-dark)' : 'var(--danger-text)');
+          let percColor = bateu ? 'var(--success)' : (isInsumo ? 'var(--warning-text-dark)' : 'var(--danger)');
 
           let prodPorIntStr = inf.intProd > 0 ? (inf.prod / inf.intProd).toFixed(1).replace('.', ',') : '0,0';
           
-          let itemsText = inf.items.map(i => `<div style="margin-bottom:6px; font-size:13px;"><b>${i.producaoDia}x</b> ${i.item} <span style="color:var(--text-muted)">(${i.tipo})</span></div>`).join('');
+          let itemsText = inf.items.map(i => `<div style="margin-bottom:6px; font-size:0.85rem;"><b>${i.producaoDia}x</b> ${i.item} <span style="color:var(--text-muted)">(${i.tipo})</span></div>`).join('');
           
           let uniqJ = [...new Set(inf.justs)].filter(j => j && j.trim() !== "");
           let justHtml = '';
           
           if (!bateu) {
               let txtJust = uniqJ.length > 0 ? uniqJ.join(', ') : 'Não informado';
-              justHtml = `<div style="background: var(--danger-bg); border-left: 3px solid var(--danger-text); padding: 8px 12px; border-radius: 6px; font-size: 12px; color: var(--danger-text);">
+              justHtml = `<div style="background: var(--danger-bg); border-left: 4px solid var(--danger); padding: 10px 15px; border-radius: 8px; font-size: 0.8rem; color: var(--danger);">
                             <span style="font-weight:700">Motivo:</span> ${txtJust}
                           </div>`;
           }
 
-          trs += `<tr>
-            <td>
-              <div style="font-size:15px; font-weight:700; margin-bottom: 8px; color:var(--text-main);">${d}</div>
-              <span class="pill ${statusClass}" style="display:inline-block; font-size:10px; padding:5px 10px;">${statusText}</span>
+          trs += `<tr style="border-bottom: 1px dashed var(--border-color); transition: 0.2s;" onmouseover="this.style.background='var(--table-row-hover)'" onmouseout="this.style.background='transparent'">
+            <td style="padding: 15px 20px; vertical-align: top;">
+              <div style="font-size:0.95rem; font-weight:800; margin-bottom: 8px; color:var(--text-main);">${d}</div>
+              <span class="pill ${statusClass}" style="display:inline-block; font-size:0.65rem; padding:5px 10px;">${statusText}</span>
             </td>
-            <td>
+            <td style="padding: 15px 20px; vertical-align: top;">
               <div style="margin-bottom: 4px;">
-                 <span style="font-size:24px; font-weight:700; color:var(--primary); line-height:1;">${inf.prod}</span> 
-                 <span style="font-size:13px; color:var(--text-muted); font-weight:600;">/ ${inf.meta} (Meta)</span>
+                 <span style="font-size:1.6rem; font-weight:800; color:var(--primary); line-height:1;">${inf.prod}</span> 
+                 <span style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">/ ${inf.meta} (Meta)</span>
               </div>
-              <div style="font-size:13px; font-weight:700; color:${percColor};">${perc}% de Performance</div>
+              <div style="font-size:0.85rem; font-weight:700; color:${percColor};">${perc}% de Performance</div>
             </td>
-            <td>${itemsText}</td>
-            <td style="text-align:center;">
-              <div style="font-size:13px; color:var(--text-muted); margin-bottom:6px; display:flex; flex-direction:column; gap:3px;">
+            <td style="padding: 15px 20px; vertical-align: top; color: var(--text-main);">${itemsText}</td>
+            <td style="text-align:center; padding: 15px 20px; vertical-align: top;">
+              <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:6px; display:flex; flex-direction:column; gap:3px;">
                  <span>Vinculados: <b style="color:var(--text-main)">${inf.intVinc}</b></span>
                  <span>Produzindo: <b style="color:var(--primary)">${inf.intProd}</b></span>
               </div>
-              <div style="font-size:11px; background:var(--bg-body); padding:5px 8px; border-radius:6px; display:inline-block; border: 1px solid var(--border); margin-top:4px;">
-                 <b style="font-size: 13px;">${prodPorIntStr}</b> <span style="color:var(--text-muted)">Peças por Interno</span>
+              <div style="font-size:0.75rem; background:var(--input-bg); padding:5px 10px; border-radius:8px; display:inline-block; border: 1px solid var(--border-color); margin-top:4px;">
+                 <b style="font-size: 0.85rem; color:var(--text-main);">${prodPorIntStr}</b> <span style="color:var(--text-muted)">Peças por Interno</span>
               </div>
             </td>
-            <td>${justHtml}</td>
+            <td style="padding: 15px 20px; vertical-align: top;">${justHtml}</td>
           </tr>`;
       });
 
@@ -581,15 +534,16 @@
       document.getElementById('rxIntVinc').innerText = latestIntVinc;
       document.getElementById('rxIntRemun').innerText = remunCount;
       
-      document.getElementById('rxTableBody').innerHTML = trs || '<tr><td colspan="5" style="text-align:center; padding: 30px; color:var(--text-muted)">Nenhuma produção registrada neste período.</td></tr>';
+      document.getElementById('rxTableBody').innerHTML = trs || '<tr><td colspan="5" style="text-align:center; padding: 30px; color:var(--text-muted); font-weight:600;">Nenhuma produção registrada neste período.</td></tr>';
       document.getElementById('rxDateSearch').value = '';
 
       if (rxChartInst) rxChartInst.destroy();
       if (!document.getElementById('pageOficina').classList.contains('active')) return;
 
       let ctx = document.getElementById('rxChart').getContext('2d');
-      let gridColor = getThemeColor('--chart-grid');
-      let txtColor = getThemeColor('--text-muted');
+      let gridColor = getComputedStyle(document.body).getPropertyValue('--chart-grid').trim();
+      let txtColor = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+      let accent = getComputedStyle(document.body).getPropertyValue('--accent').trim();
 
       rxChartInst = new Chart(ctx, {
           type: 'bar',
@@ -598,20 +552,20 @@
               datasets: [{
                   label: 'Produção Diária',
                   data: prodData,
-                  backgroundColor: '#1E88E5',
-                  borderRadius: 4,
-                  datalabels: { color: 'white', font: {weight:'bold'}, anchor: 'end', align: 'top', offset: 2 }
+                  backgroundColor: accent,
+                  borderRadius: 6,
+                  datalabels: { color: 'white', font: {weight:'bold', family:'Poppins'}, anchor: 'end', align: 'top', offset: 2 }
               }]
           },
           options: {
               responsive: true, maintainAspectRatio: false,
               scales: {
-                  x: { grid: {display:false}, ticks: {color: txtColor} },
-                  y: { beginAtZero: true, grid:{color: gridColor}, ticks: {color: txtColor} }
+                  x: { grid: {display:false}, ticks: {color: txtColor, font:{family:'Poppins', weight:'600'}} },
+                  y: { beginAtZero: true, grid:{color: gridColor}, ticks: {color: txtColor, font:{family:'Poppins', weight:'600'}} }
               },
               plugins: { 
                   legend: { display: false },
-                  title: { display: true, text: 'Volume de Produção Diário (Período Completo)', color: txtColor, align: 'start', font: {size: 14, weight: '600'} }
+                  title: { display: true, text: 'Volume de Produção Diário (Período Completo)', color: txtColor, align: 'start', font: {size: 14, weight: '700', family:'Poppins'}, padding:{bottom:20} }
               }
           }
       });

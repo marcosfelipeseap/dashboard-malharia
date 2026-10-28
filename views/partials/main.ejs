@@ -1,125 +1,94 @@
 <div id="customModal" class="modal">
-  <div class="modal-content">
+  <div class="modal-content chart-card" style="padding: 20px;">
     <span class="close" onclick="closeModal()">&times;</span>
-    <h3 id="modalTitle" style="margin-top:0; color:var(--primary)"></h3>
+    <h3 id="modalTitle" style="margin-top:0; color:var(--text-main); font-weight: 700; text-transform: uppercase;"></h3>
     <div id="modalList"></div>
   </div>
 </div>
 
-<div id="loading">
-  <span class="material-icons" style="font-size:40px; animation:spin 1s infinite linear; margin-bottom:15px">refresh</span>
-  <p>Carregando Painel...</p>
-</div>
-
-<div id="topBarGlobal" class="top-bar">
-  <div class="filters-row">
-    <div style="font-weight:700; color:var(--primary); display:flex; align-items:center; gap:5px; margin-right: 15px;">
-      <span class="material-icons">filter_list</span> FILTROS
-    </div>
-    <div class="filter-group"><label>Início</label><input type="date" id="globalStart" onchange="updateAll()"></div>
-    <div class="filter-group"><label>Fim</label><input type="date" id="globalEnd" onchange="updateAll()"></div>
-    
-    <!-- Botão de Refresh e Relógio em Tempo Real -->
-    <div class="filter-group" style="margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 5px;">
-      <button class="btn-notif btn-notif-sec" onclick="refreshDashboard()" style="padding: 6px 12px; font-size: 12px;">
-        <span class="material-icons" style="font-size:16px; margin-right: 5px;">sync</span> Atualizar Dados
-      </button>
-      <div id="lastUpdate" style="font-size: 13px; color: var(--text-muted); font-weight: 500;"></div>
-    </div>
-  </div>
-</div>
-
-<div id="infoTextGlobal" class="info-text">
-  <span class="material-icons" style="font-size:14px">info</span>
-  Exibindo dados dos últimos 3 meses por padrão. Altere as datas acima para ver histórico antigo.
-</div>
-
 <div id="page1" class="page active">
-  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap: wrap; gap: 10px;">
-    <h2 id="page1Title" style="margin-bottom:0;">Diário de Produção</h2>
-    <div style="display:flex; gap: 15px; align-items:flex-end; flex-wrap: wrap;">
-      <button class="btn-notif btn-notif-pri" onclick="generateDiarioRelatorio()" style="padding: 8px 15px; font-size: 13px; height: 37px;"><i class="bi bi-whatsapp" style="margin-right: 5px;"></i> Relatório</button>
-      <div class="filter-group"><label>Dia</label><input type="date" id="dailyDate" onchange="renderPage1()"></div>
+  <div class="slide-header">
+    <div class="slide-title"><span class="material-icons">history_edu</span> Diário de Produção</div>
+    <div style="display:flex; gap: 15px; align-items:center; flex-wrap: wrap;">
+      <div class="date-filters" style="padding: 5px 15px;"><label style="font-size:12px; font-weight:700; color:var(--text-muted); margin-right:5px;">Dia</label><input type="date" id="dailyDate" onchange="renderPage1()"></div>
+      <button class="theme-btn" onclick="generateDiarioRelatorio()" style="color:var(--success); border-color:var(--success); font-weight:700;"><i class="bi bi-whatsapp" style="margin-right: 5px;"></i> Relatório</button>
     </div>
   </div>
-  <div id="dailySummary" class="p1-summary-row"></div>
-  <div id="dailyCards" class="cards-grid"></div>
+  <div id="dailySummary" class="p1-summary-row" style="display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap;"></div>
+  <div id="dailyCards" class="cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;"></div>
 </div>
 
 <div id="page2" class="page">
-  <h2>Desempenho (Meta x Produção)</h2>
-  <p style="font-size:13px; color:var(--text-muted)">Clique nas oficinas para visualizar.</p>
-  <div id="oficinaChips" class="chip-container"></div>
+  <div class="slide-header">
+    <div class="slide-title"><span class="material-icons">show_chart</span> Desempenho (Meta x Produção)</div>
+  </div>
+  <div class="chart-card" style="padding: 20px; margin-bottom: 20px;">
+    <p style="font-size:13px; color:var(--text-muted); font-weight:600; text-transform:uppercase;">Selecione as oficinas para visualizar:</p>
+    <div id="oficinaChips" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;"></div>
+  </div>
   <div id="chartsArea"></div>
 </div>
 
 <div id="page3" class="page">
-  <h2>Histórico Detalhado</h2>
+  <div class="slide-header">
+    <div class="slide-title"><span class="material-icons">list_alt</span> Histórico Detalhado</div>
+  </div>
 
-  <div class="ranking-container">
-      <div class="ranking-header">
-          <div class="ranking-title">Ranking de Performance</div>
-          <div class="ranking-period" id="rankingPeriodDisplay"></div>
+  <div class="chart-card" style="padding: 20px; margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+          <div style="font-weight: 700; font-size: 16px; color: var(--text-main); text-transform: uppercase;">Ranking de Performance</div>
+          <div id="rankingPeriodDisplay" style="font-size: 13px; color: var(--text-muted); font-weight: 500;"></div>
       </div>
-      <div id="rankingList" class="rank-list"></div>
+      <div id="rankingList" style="display: grid; grid-template-columns: 1fr; gap: 10px;"></div>
   </div>
 
-  <div class="ranking-container" style="margin-top: 20px;">
-      <div class="ranking-header">
-          <div class="ranking-title">Ranking de Malharia Sem Relatório</div>
+  <div class="chart-card" style="padding: 20px; margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+          <div style="font-weight: 700; font-size: 16px; color: var(--text-main); text-transform: uppercase;">Ranking de Malharia Sem Relatório</div>
       </div>
-      <div id="rankingMissingList" class="rank-list"></div>
+      <div id="rankingMissingList" style="display: grid; grid-template-columns: 1fr; gap: 10px;"></div>
   </div>
 
-  <div class="legend-highlight" style="margin-top: 20px;">
-      <span class="material-icons" style="font-size:18px">warning_amber</span>
-      <span>SR = Quantidade de dias que o relatório não foi enviado (Sem Relatório). S/I = Sem Insumo (E produção zero).</span>
+  <div class="legend-highlight" style="background: var(--warning-bg); border: 1px solid var(--warning); color: var(--warning-text-dark); font-weight: 600; padding: 12px; border-radius: 12px; display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 13px;">
+      <span class="material-icons" style="font-size:20px">warning_amber</span>
+      <span>SR = Quantidade de dias que o relatório não foi enviado. S/I = Sem Insumo (Produção zero).</span>
   </div>
-  <div id="chartDetailsContainer" class="chart-card" style="margin-bottom:20px; height:400px">
+  <div id="chartDetailsContainer" class="chart-card" style="margin-bottom:20px; height:400px; padding: 20px;">
       <canvas id="chartDetails"></canvas>
   </div>
   <div id="detailedList"></div>
 </div>
 
 <div id="page4" class="page">
-  <h2>Produção por Demanda</h2>
-  <div class="selection-panel">
+  <div class="slide-header">
+    <div class="slide-title"><span class="material-icons">analytics</span> Produção por Demanda</div>
+  </div>
+  <div style="display: grid; grid-template-columns: 280px 1fr; gap: 20px;">
     <div>
-      <div class="filter-group" style="margin-bottom:20px; position:relative;">
-        <label>Demanda</label>
-        
-        <div class="custom-dropdown" id="demandaDropdown">
-            <div class="custom-dropdown-btn" onclick="toggleDemandaDropdown()">
-              <span id="demandaSelectedText" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; max-width:210px;">Carregando...</span>
-              <span class="material-icons" style="font-size:18px">arrow_drop_down</span>
-            </div>
-            <div class="custom-dropdown-content" id="demandaDropdownContent">
-              <div class="custom-dropdown-search">
-                  <input type="text" id="demandaSearchInput" placeholder="Pesquisar demanda..." onkeyup="filterDemandaOptions(event)" onclick="event.stopPropagation()">
-              </div>
-              <div class="custom-options-wrapper" id="demandaOptionsContainer"></div>
-            </div>
-        </div>
-        <select id="p4Demanda" style="display:none;"></select>
-        
+      <div class="custom-dropdown" id="demandaDropdown" style="margin-bottom:20px; width: 100%;">
+          <label style="font-size:11px;font-weight:700;color:var(--text-muted); display:block; margin-bottom:5px;">DEMANDA</label>
+          <div class="drop-btn" onclick="toggleDemandaDropdown()">
+            <span id="demandaSelectedText" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; max-width:210px;">Carregando...</span>
+            <span class="material-icons" style="font-size:18px">arrow_drop_down</span>
+          </div>
+          <div class="dropdown-content" id="demandaDropdownContent">
+            <div style="padding: 10px;"><input type="text" id="demandaSearchInput" class="dropdown-search" placeholder="Pesquisar..." onkeyup="filterDemandaOptions(event)" onclick="event.stopPropagation()"></div>
+            <div id="demandaOptionsContainer" style="max-height:200px; overflow-y:auto;"></div>
+          </div>
       </div>
+      <select id="p4Demanda" style="display:none;"></select>
       
-      <div class="filter-group">
-        <label>Peças</label>
-        <input type="text" id="p4SearchPecas" class="search-input" placeholder="Pesquisar peça..." onkeyup="filterP4Pecas()">
+      <div style="margin-bottom:10px;">
+        <label style="font-size:11px;font-weight:700;color:var(--text-muted); display:block; margin-bottom:5px;">PEÇAS</label>
+        <input type="text" id="p4SearchPecas" style="width:100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); outline:none;" placeholder="Pesquisar peça..." onkeyup="filterP4Pecas()">
       </div>
-      <div id="p4PecasContainer" class="panel-list"></div>
+      <div id="p4PecasContainer" class="chart-card" style="height: 400px; overflow-y: auto; padding: 10px;"></div>
     </div>
     <div style="display:flex; flex-direction:column;">
-      <div id="p4Summary" class="summary-bar"></div>
-      <div class="panel-list" style="flex:1; height:auto; display:flex; flex-direction:column;">
-          
-          <div style="flex:1; min-height: 300px; display:flex; align-items:center; justify-content:center;">
-              <canvas id="chartDemanda"></canvas>
-          </div>
-          
-          <div id="p4OficinasBreakdown" style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px;"></div>
-          
+      <div id="p4Summary" style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;"></div>
+      <div class="chart-card" style="flex:1; padding: 20px; display:flex; flex-direction:column;">
+          <div style="flex:1; min-height: 300px;"><canvas id="chartDemanda"></canvas></div>
+          <div id="p4OficinasBreakdown" style="margin-top: 20px; border-top: 1px dashed var(--border-color); padding-top: 15px;"></div>
       </div>
     </div>
   </div>
@@ -201,25 +170,19 @@
       }
   }
 
-  // =========================================================
-  // NODE.JS: LEITURA IMEDIATA DA VARIÁVEL INJETADA PELO EJS
-  // =========================================================
   window.onload = async function() {
-    document.getElementById('loading').style.display = 'flex';
     
-    // Inicia o relógio assim que a página carrega
     startClock();
-    setInterval(startClock, 1000);
     
     try {
-        let data = INITIAL_DATA; // Puxado do index.ejs
+        let data = INITIAL_DATA; 
         
-        // Verifica se é uma recarga forçada via URL
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('refresh') === 'true') {
+            document.getElementById('loader').style.display = 'flex';
+            document.getElementById('loader').style.opacity = '1';
             const res = await fetch('/api/data');
             data = await res.json();
-            // Remove o parâmetro refresh da URL para não ficar em loop ao recarregar a página normalmente
             window.history.replaceState({}, document.title, "/");
         }
 
@@ -232,7 +195,6 @@
         window.globalFardSeapData = data.fardSeapData;
         window.infoOficinasEstatico = data.oficinasData;
 
-        // Inicializa todos os subsistemas
         init(sheetData);
         buildNotifications(window.globalScheduleData);
         
@@ -241,7 +203,7 @@
         if (typeof preloadFardamento === 'function') preloadFardamento(window.globalFardData);
         if (typeof preloadFardamentoSeap === 'function') preloadFardamentoSeap(window.globalFardSeapData);
         
-        document.getElementById('loading').style.display = 'none';
+        document.body.classList.add('loaded');
         
         if (!window.hasShownNotif) {
             openNotifications();
@@ -250,27 +212,9 @@
     } catch (err) {
         console.error(err);
         alert("Erro ao processar dados do painel: " + err.message);
-        document.getElementById('loading').style.display = 'none';
+        document.body.classList.add('loaded');
     }
   };
-
-  // Função para o botão de refresh manual
-  window.refreshDashboard = function() {
-      window.location.href = '/?refresh=true';
-  };
-
-  // Função do Relógio em Tempo Real
-  function startClock() {
-      const clockElement = document.getElementById('lastUpdate');
-      if (clockElement) {
-          clockElement.innerHTML = `<i class="bi bi-clock me-1"></i> ${new Date().toLocaleTimeString('pt-BR', {
-              timeZone: 'America/Sao_Paulo', 
-              hour: '2-digit', 
-              minute: '2-digit', 
-              second: '2-digit'
-          })}`;
-      }
-  }
 
   function init(data) {
     if(data.error) { return; } 
@@ -285,7 +229,6 @@
       if (!demandaMap[normItem] && r.item) {
           demandaMap[normItem] = r.item;
       }
-      
       return { ...r, dateObj: dateObj, normItem: normItem };
     });
 
@@ -311,7 +254,6 @@
     renderPage1();
   }
 
-  // --- LÓGICA DAS NOTIFICAÇÕES (MENU SANFONA E AGRUPAMENTO) ---
   function getStartAndEndOfWeek() {
       let today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -321,7 +263,6 @@
       let end = new Date(today.getTime());
       end.setDate(today.getDate() + (6 - dayOfWeek)); 
       end.setHours(23, 59, 59, 999);
-      
       return { start, end };
   }
 
@@ -353,7 +294,7 @@
       let whatsappText = '*⚠️ ENTREGAS PENDENTES DA SEMANA* 📅\n\n';
 
       if(pendingThisWeek.length === 0) {
-          notifHtml = '<div style="text-align: center; padding: 30px; color: var(--text-muted);"><span class="material-icons" style="font-size: 48px; color: #4CAF50; display: block; margin-bottom: 15px;">check_circle</span>Nenhuma entrega pendente para esta semana! 🎉</div>';
+          notifHtml = '<div style="text-align: center; padding: 30px; color: var(--text-muted);"><span class="material-icons" style="font-size: 48px; color: var(--success); display: block; margin-bottom: 15px;">check_circle</span>Nenhuma entrega pendente para esta semana! 🎉</div>';
           whatsappText += 'Nenhuma entrega pendente para esta semana! 🎉';
           document.getElementById('notifBadge').style.display = 'none';
       } else {
@@ -376,7 +317,7 @@
               });
               
               let uiItemsHtml = Object.keys(sumUI).map(nome => {
-                  return `<li><span style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%;">${nome}</span> <span class="badge-warning">${sumUI[nome]} pendentes</span></li>`;
+                  return `<li><span style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%;">${nome}</span> <span class="st-badge warn">${sumUI[nome]} pendentes</span></li>`;
               }).join('');
               
               let prevFormatada = `${g.prazo} (${g._nomeDia})`;
@@ -385,12 +326,12 @@
               <div class="notif-item">
                   <div class="notif-item-header" onclick="toggleAccordion(this)">
                       <div class="header-row-1">
-                          <strong style="color:var(--primary); font-size: 15px;">${g.orgao}</strong>
+                          <strong style="color:var(--accent); font-size: 15px;">${g.orgao}</strong>
                           <span class="material-icons">expand_more</span>
                       </div>
                       <div class="header-row-2">
                           <span>Processo: <strong>${g.nProcesso || 'N/A'}</strong></span>
-                          <span class="badge-danger"><span class="material-icons" style="font-size: 12px; vertical-align: middle; margin-right: 3px;">event</span> ${prevFormatada}</span>
+                          <span class="st-badge fail"><span class="material-icons" style="font-size: 12px; vertical-align: middle; margin-right: 3px;">event</span> ${prevFormatada}</span>
                       </div>
                   </div>
                   <div class="notif-item-body">
@@ -431,7 +372,7 @@
           const origHtml = btn.innerHTML;
           btn.innerHTML = '<i class="bi bi-check-lg" style="font-size: 16px; margin-right: 6px;"></i> Copiado!';
           btn.classList.remove('btn-notif-pri');
-          btn.style.background = 'var(--surface)';
+          btn.style.background = 'var(--input-bg)';
           btn.style.color = '#4CAF50';
           btn.style.border = '1px solid #4CAF50';
           setTimeout(() => {
@@ -442,43 +383,6 @@
       });
   }
 
-  function toggleDarkMode() {
-    document.body.classList.toggle('dark-mode');
-    let isDark = document.body.classList.contains('dark-mode');
-    document.getElementById('modeIcon').innerText = isDark ? 'light_mode' : 'dark_mode';
-    document.getElementById('modeText').innerText = isDark ? 'Modo Claro' : 'Modo Escuro';
-    updateAll(); 
-  }
-  
-  function getThemeColor(variable) {
-    return getComputedStyle(document.body).getPropertyValue(variable).trim();
-  }
-
-  function showPage(pid) {
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-    document.getElementById(pid).classList.add('active');
-    event.currentTarget.classList.add('active');
-    
-    if(pid === 'page5' || pid === 'page6' || pid === 'page7' || pid === 'page8') {
-        document.getElementById('topBarGlobal').style.display = 'none';
-        document.getElementById('infoTextGlobal').style.display = 'none';
-    } else {
-        document.getElementById('topBarGlobal').style.display = 'block';
-        document.getElementById('infoTextGlobal').style.display = 'flex';
-    }
-
-    if(pid === 'page1') renderPage1();
-    if(pid === 'pageOficina' && typeof renderPageOficina === 'function') renderPageOficina();
-    if(pid === 'page2') renderPage2();
-    if(pid === 'page3') renderPage3();
-    if(pid === 'page4') renderPage4();
-    if(pid === 'page5' && typeof renderPage5 === 'function') renderPage5();
-    if(pid === 'page6' && typeof initCronograma === 'function') initCronograma();
-    if(pid === 'page7' && typeof initFardamento === 'function') initFardamento();
-    if(pid === 'page8' && typeof initFardamentoSeap === 'function') initFardamentoSeap();
-  }
-
   function updateAll() {
     setupChips();
     let active = document.querySelector('.page.active').id;
@@ -486,6 +390,7 @@
         let functionName = active.replace('page', 'renderPage');
         if (typeof window[functionName] === 'function') window[functionName]();
     }
+    if(active === 'pageOficina' && typeof renderPageOficina === 'function') renderPageOficina();
     if(active === 'page5' && typeof renderPage5 === 'function') renderPage5();
     if(active === 'page6' && typeof initCronograma === 'function') initCronograma();
     if(active === 'page7' && typeof initFardamento === 'function') renderFardamento();
@@ -502,7 +407,6 @@
         items.forEach(i => {
             let div = document.createElement('div');
             div.className = 'modal-item';
-            div.style.marginBottom = '6px';
             if (isHtml) div.innerHTML = i;
             else div.innerText = i;
             list.appendChild(div);
@@ -512,7 +416,6 @@
   }
 
   function closeModal() { document.getElementById('customModal').style.display = 'none'; }
-  window.onclick = function(event) { if (event.target == document.getElementById('customModal')) closeModal(); }
 
   function wrapText(str, maxChars) {
     if(!str) return [];
@@ -595,7 +498,7 @@
       streaks.forEach(streak => {
           if(streak.length === 1) {
               formattedItems.push(`
-                  <div style="margin-bottom: 8px; border-left: 3px solid var(--neutral-text); padding-left: 10px;">
+                  <div style="margin-bottom: 8px; border-left: 3px solid var(--text-muted); padding-left: 10px;">
                       <div style="font-weight: 600; color: var(--text-main);">Dia isolado</div>
                       <div style="font-size: 13px; color: var(--text-muted);">${streak[0]}</div>
                   </div>
@@ -605,10 +508,10 @@
               let end = streak[streak.length - 1].split(' ')[0];
               let daysList = streak.map(s => s.split(' ')[0]).join(', ');
               formattedItems.push(`
-                  <div style="margin-bottom: 8px; border-left: 3px solid var(--danger-text); padding-left: 10px;">
+                  <div style="margin-bottom: 8px; border-left: 3px solid var(--danger); padding-left: 10px;">
                       <div style="font-weight: 600; color: var(--text-main);">Período consecutivo: ${streak.length} dias</div>
                       <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 4px;">De <b>${start}</b> até <b>${end}</b></div>
-                      <div style="font-size: 12px; color: var(--text-muted); background: var(--bg-body); padding: 4px; border-radius: 4px;">Dias: ${daysList}</div>
+                      <div style="font-size: 12px; color: var(--text-muted); background: var(--input-bg); padding: 4px; border-radius: 4px;">Dias: ${daysList}</div>
                   </div>
               `);
           }
@@ -636,7 +539,6 @@
       return `rgb(${r}, ${g}, ${b})`;
   }
 
-  // --- FUNÇÃO PARA GERAR RELATÓRIO DO DIÁRIO PARA O WHATSAPP ---
   function generateDiarioRelatorio() {
       let val = document.getElementById('dailyDate').value;
       if(!val) return;
@@ -730,7 +632,6 @@
       openWhatsModal(text.trim());
   }
 
-  // --- PAGE 1: DIARIO ---
   function renderPage1() {
     let val = document.getElementById('dailyDate').value;
     if(!val) return;
@@ -776,31 +677,28 @@
         return true;
     });
 
-    let titleHtml = `Diário de Produção ${isWeekendDay ? '<span style="font-size:14px; background:var(--warning-bg); color:var(--warning-text-dark); padding:4px 8px; border-radius:4px; margin-left:10px; font-weight: 600;">Fim de Semana</span>' : ''}`;
-    document.getElementById('page1Title').innerHTML = titleHtml;
-
     listOk.sort(); listInsumo.sort(); listFail.sort(); listMissing.sort();
 
     summaryCont.innerHTML = `
-        <div class="p1-stat-card" style="border-left: 5px solid var(--success-text);">
-            <div style="font-size:12px; text-transform:uppercase; color:var(--text-muted); font-weight:600">Satisfatório</div>
-            <div class="p1-stat-val" style="color:var(--success-text)">${listOk.length}</div>
+        <div class="chart-card" style="flex: 1; border-left: 5px solid var(--success); padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 150px;">
+            <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700">Satisfatório</div>
+            <div style="font-size:1.8rem; font-weight:800; color:var(--success)">${listOk.length}</div>
         </div>
-        <div class="p1-stat-card" style="border-left: 5px solid var(--warning-text-dark);">
-            <div style="font-size:12px; text-transform:uppercase; color:var(--text-muted); font-weight:600">Sem Insumo</div>
-            <div class="p1-stat-val" style="color:var(--warning-text-dark)">${listInsumo.length}</div>
+        <div class="chart-card" style="flex: 1; border-left: 5px solid var(--warning-text-dark); padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 150px;">
+            <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700">Sem Insumo</div>
+            <div style="font-size:1.8rem; font-weight:800; color:var(--warning-text-dark)">${listInsumo.length}</div>
         </div>
-        <div class="p1-stat-card" style="border-left: 5px solid var(--danger-text);">
-            <div style="font-size:12px; text-transform:uppercase; color:var(--text-muted); font-weight:600">Insuficiente</div>
-            <div class="p1-stat-val" style="color:var(--danger-text)">${listFail.length}</div>
+        <div class="chart-card" style="flex: 1; border-left: 5px solid var(--danger); padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 150px;">
+            <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700">Insuficiente</div>
+            <div style="font-size:1.8rem; font-weight:800; color:var(--danger)">${listFail.length}</div>
         </div>
-        <div class="p1-stat-card" style="border-left: 5px solid var(--neutral-text);">
-            <div style="font-size:12px; text-transform:uppercase; color:var(--text-muted); font-weight:600">Não Informado</div>
-            <div class="p1-stat-val" style="color:var(--neutral-text)">${listMissing.length}</div>
+        <div class="chart-card" style="flex: 1; border-left: 5px solid var(--text-muted); padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 150px;">
+            <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700">Não Informado</div>
+            <div style="font-size:1.8rem; font-weight:800; color:var(--text-muted)">${listMissing.length}</div>
         </div>
     `;
 
-    if(!listOk.length && !listInsumo.length && !listFail.length && !listMissing.length) { cont.innerHTML = '<div style="color:var(--text-muted)">Sem registros.</div>'; return; }
+    if(!listOk.length && !listInsumo.length && !listFail.length && !listMissing.length) { cont.innerHTML = '<div style="color:var(--text-muted); font-weight: 600;">Sem registros para esta data.</div>'; return; }
 
     let presentSorted = [...listOk, ...listInsumo, ...listFail];
     presentSorted.forEach(of => {
@@ -808,7 +706,7 @@
       let bateu = g.prod > 0 && g.prod >= g.meta;
       let isInsumo = listInsumo.includes(of);
 
-      let itemsHtml = g.items.map(i => `<div class="item-row"><div><b>${i.item}</b> - ${i.tipo}</div><div>${i.producaoDia}</div></div>`).join('');
+      let itemsHtml = g.items.map(i => `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed var(--border-color); font-size:0.85rem;"><div><b>${i.item}</b> <span style="color:var(--text-muted)">- ${i.tipo}</span></div><div style="font-weight:700;">${i.producaoDia}</div></div>`).join('');
       let infoMaq = g.items[0].maquinas || '?'; let infoInt = g.items[0].internos || '?';
       let perc = g.meta > 0 ? Math.round((g.prod / g.meta) * 100) : 0;
       if (g.meta === 0 && isInsumo) perc = 0;
@@ -817,34 +715,34 @@
       if(bateu) { statusText = 'SATISFATÓRIO'; statusClass = 'ok'; }
       else if(isInsumo) { statusText = 'SEM INSUMO'; statusClass = 'insumo'; }
 
-      let card = document.createElement('div'); card.className = 'card';
+      let card = document.createElement('div'); card.className = 'chart-card'; card.style.padding = '0';
       card.innerHTML = `
-        <div class="card-header">
+        <div style="padding:15px 20px; background:var(--input-bg); display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1px solid var(--border-color);">
           <div style="display:flex; flex-direction:column; justify-content:center;">
-            <span style="font-weight:700; color:#1565C0">${of}</span>
-            <div style="font-size:11px; color:var(--text-muted); font-weight:400; margin-top:4px; display:flex; flex-direction:column; gap:2px;">
+            <span style="font-weight:800; color:var(--accent); font-size: 1.1rem; text-transform: uppercase;">${of}</span>
+            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-top:4px; display:flex; flex-direction:column; gap:2px;">
                 <span>Máquinas: ${infoMaq}</span>
                 <span>Internos: ${infoInt}</span>
             </div>
           </div>
-          <span class="pill ${statusClass}" style="font-size:13px; padding:6px 14px; box-shadow:0 2px 5px rgba(0,0,0,0.15); letter-spacing:0.5px;">${statusText}</span>
+          <span class="pill ${statusClass}">${statusText}</span>
         </div>
-        <div class="card-body" style="padding:15px">
-          <div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items:flex-end;">
+        <div style="padding:20px">
+          <div style="display:flex; justify-content:space-between; margin-bottom:15px; align-items:flex-end;">
             <div>
-              <small style="font-weight:600; color:var(--text-muted)">PRODUÇÃO</small>
-              <div style="font-size:26px; font-weight:700; line-height:1.1">${g.prod}</div>
-              <small style="font-weight:600; color:var(--text-muted)">PERFORMANCE</small>
+              <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">PRODUÇÃO</div>
+              <div style="font-size:2rem; font-weight:800; line-height:1.1; color:var(--text-main);">${g.prod}</div>
+              <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">PERFORMANCE</div>
             </div>
             <div style="text-align:right">
-              <small>META</small>
-              <div style="font-size:18px; color:var(--text-muted)">${g.meta}</div>
-              <div style="font-size:14px; font-weight:700; color:${bateu?'var(--success-text)':(isInsumo?'var(--warning-text-dark)':'var(--danger-text)')}">${perc}%</div>
+              <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">META</div>
+              <div style="font-size:1.2rem; font-weight:800; color:var(--text-muted);">${g.meta}</div>
+              <div style="font-size:1.1rem; font-weight:800; color:${bateu?'var(--success)':(isInsumo?'var(--warning-text-dark)':'var(--danger)')}">${perc}%</div>
             </div>
           </div>
-          <div style="background:var(--bg-body); padding:10px; border-radius:8px; margin-bottom:10px">${itemsHtml}</div>
+          <div style="background:var(--input-bg); padding:10px 15px; border-radius:12px; margin-bottom:10px; border:1px solid var(--border-color);">${itemsHtml}</div>
           ${!bateu ? 
-            `<div style="border:1px solid var(--border); border-radius:8px; padding:8px; font-size:12px; color:var(--danger-text); margin-top:10px;">
+            `<div style="background:var(--danger-bg); border-left:3px solid var(--danger); border-radius:6px; padding:10px; font-size:0.8rem; color:var(--danger); margin-top:10px;">
                <span style="font-weight:700">Motivo:</span> ${(g.justs.filter(j => j && j.trim() !== "").length > 0) ? g.justs.filter(j => j && j.trim() !== "").join(', ') : 'Não informado'}
              </div>` : ''}
         </div>`;
@@ -852,28 +750,27 @@
     });
 
     listMissing.forEach(of => {
-       let card = document.createElement('div'); card.className = 'card';
+       let card = document.createElement('div'); card.className = 'chart-card'; card.style.padding = '0';
        card.innerHTML = `
-        <div class="card-header" style="background:#f0f0f0; border-bottom:1px solid #e0e0e0;">
+        <div style="padding:15px 20px; background:var(--input-bg); display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1px solid var(--border-color); opacity: 0.7;">
           <div style="display:flex; flex-direction:column; justify-content:center;">
-            <span style="font-weight:700; color:#757575">${of}</span>
-            <div style="font-size:11px; color:#9e9e9e; font-weight:400; margin-top:4px; display:flex; flex-direction:column; gap:2px;">
+            <span style="font-weight:800; color:var(--text-muted); font-size: 1.1rem; text-transform: uppercase;">${of}</span>
+            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-top:4px; display:flex; flex-direction:column; gap:2px;">
                 <span>Máquinas: N/A</span><span>Internos: N/A</span>
             </div>
           </div>
-          <span class="pill neutral" style="font-size:13px; padding:6px 14px; box-shadow:0 2px 5px rgba(0,0,0,0.05); letter-spacing:0.5px;">NÃO INFORMADO</span>
+          <span class="pill neutral">NÃO INFORMADO</span>
         </div>
-        <div class="card-body" style="padding:15px; opacity:0.6;">
+        <div style="padding:20px; opacity:0.5;">
           <div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items:flex-end;">
-            <div><small style="font-weight:600; color:var(--text-muted)">PRODUÇÃO</small><div style="font-size:26px; font-weight:700; line-height:1.1; color:#757575">0</div><small style="font-weight:600; color:var(--text-muted)">PERFORMANCE</small></div>
-            <div style="text-align:right"><small>META</small><div style="font-size:18px; color:var(--text-muted)">?</div><div style="font-size:14px; font-weight:700; color:var(--text-muted)">0%</div></div>
+            <div><div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">PRODUÇÃO</div><div style="font-size:2rem; font-weight:800; line-height:1.1; color:var(--text-muted)">0</div><div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">PERFORMANCE</div></div>
+            <div style="text-align:right"><div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">META</div><div style="font-size:1.2rem; font-weight:800; color:var(--text-muted)">?</div><div style="font-size:1.1rem; font-weight:800; color:var(--text-muted)">0%</div></div>
           </div>
         </div>`;
        cont.appendChild(card);
     });
   }
 
-  // --- PAGE 2: DESEMPENHO ---
   function setupChips() {
     let dates = getFilterDates();
     let filtered = rawData.filter(r => r.dateObj >= dates.start && r.dateObj <= dates.end);
@@ -881,15 +778,23 @@
     cont.innerHTML = '';
     let list = [...new Set(filtered.map(r => r.oficina))].sort();
     selectedOficinas = selectedOficinas.filter(o => list.includes(o));
-    if(list.length === 0) { cont.innerHTML = '<span style="font-size:12px; color:var(--text-muted)">Nenhuma oficina neste período.</span>'; }
+    if(list.length === 0) { cont.innerHTML = '<span style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">Nenhuma oficina neste período.</span>'; }
     list.forEach(of => {
       let c = document.createElement('div');
-      c.className = 'chip'; 
-      if(selectedOficinas.includes(of)) c.classList.add('selected');
+      c.className = 'pill neutral'; c.style.cursor = 'pointer'; c.style.border = '1px solid var(--border-color)'; c.style.fontSize = '0.75rem';
+      if(selectedOficinas.includes(of)) {
+          c.classList.remove('neutral'); c.style.background = 'var(--accent)'; c.style.color = '#fff'; c.style.borderColor = 'var(--accent)';
+      }
       c.innerText = of;
       c.onclick = () => {
-        if(selectedOficinas.includes(of)) { selectedOficinas = selectedOficinas.filter(x => x !== of); c.classList.remove('selected'); } 
-        else { selectedOficinas.push(of); c.classList.add('selected'); }
+        if(selectedOficinas.includes(of)) { 
+            selectedOficinas = selectedOficinas.filter(x => x !== of); 
+            c.style.background = 'var(--input-bg)'; c.style.color = 'var(--text-muted)'; c.style.borderColor = 'var(--border-color)';
+        } 
+        else { 
+            selectedOficinas.push(of); 
+            c.style.background = 'var(--accent)'; c.style.color = '#fff'; c.style.borderColor = 'var(--accent)';
+        }
         renderPage2();
       };
       cont.appendChild(c);
@@ -932,19 +837,19 @@
 
       let perfPerc = totalMeta > 0 ? Math.round((totalProd/totalMeta)*100) : 0;
       if (totalMeta === 0 && totalProd > 0) perfPerc = 100; 
-      let perfClass = perfPerc >= 75 ? 'perf-green' : 'perf-red';
+      let perfClass = perfPerc >= 75 ? 'ok' : 'fail';
 
       let refMetaRecord = filtered.find(r => r.oficina === of && r.metaOficina > 0);
       let refMeta = refMetaRecord ? refMetaRecord.metaOficina : 0;
       
-      let div = document.createElement('div'); div.className = 'chart-card';
+      let div = document.createElement('div'); div.className = 'chart-card'; div.style.padding = '20px'; div.style.marginBottom = '20px';
       div.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px;">
-           <h3 style="margin:0; font-size:20px; align-self:center;">${of}</h3>
-           <div class="p2-header-right">
-               <div class="perf-label ${perfClass}">PERFORMANCE: ${perfPerc}%</div>
-               ${missingDates.length > 0 ? `<div class="missing-label" onclick="openModal('Relatórios não enviados - ${of}', window.tempMissingData['${of}'])">RELATÓRIOS NÃO ENVIADOS: ${missingDates.length} DIAS</div>` : '' }
-               ${insumoDaysList.length > 0 ? `<div class="insumo-label" onclick="openModal('Dias sem Insumo (Prod: 0) - ${of}', window.tempInsumoData['${of}'])">DIAS SEM INSUMO (PROD ZERO): ${insumoDaysList.length} DIAS</div>` : '' }
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:15px; flex-wrap:wrap; gap:15px;">
+           <h3 style="margin:0; font-size:1.2rem; font-weight:800; color:var(--text-main); text-transform:uppercase;">${of}</h3>
+           <div style="text-align: right; display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
+               <div class="st-badge ${perfClass}">PERFORMANCE: ${perfPerc}%</div>
+               ${missingDates.length > 0 ? `<div class="st-badge neutral" style="cursor:pointer; border:1px solid var(--border-color);" onclick="openModal('Relatórios não enviados - ${of}', window.tempMissingData['${of}'])">RELATÓRIOS NÃO ENVIADOS: ${missingDates.length} DIAS</div>` : '' }
+               ${insumoDaysList.length > 0 ? `<div class="st-badge warn" style="cursor:pointer; border:1px solid var(--warning);" onclick="openModal('Dias sem Insumo (Prod: 0) - ${of}', window.tempInsumoData['${of}'])">DIAS SEM INSUMO (PROD ZERO): ${insumoDaysList.length} DIAS</div>` : '' }
            </div>
         </div>
         <div style="height:300px"><canvas></canvas></div>`;
@@ -972,7 +877,11 @@
          return refMeta;
       });
 
-      let gridColor = getThemeColor('--chart-grid'); let txtColor = getThemeColor('--text-muted');
+      let gridColor = getComputedStyle(document.body).getPropertyValue('--chart-grid').trim(); 
+      let txtColor = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+      let accent = getComputedStyle(document.body).getPropertyValue('--accent').trim();
+      let danger = getComputedStyle(document.body).getPropertyValue('--danger').trim();
+
       let ctx = div.querySelector('canvas');
       let chart = new Chart(ctx, {
         type: 'line',
@@ -980,21 +889,23 @@
           labels: dates,
           datasets: [
             {
-              label: 'Produção', data: prodData, spanGaps: true, borderColor: '#1E88E5', backgroundColor: '#1E88E5',
-              borderWidth: 3, pointRadius: 5, pointBackgroundColor: getThemeColor('--surface'), tension: 0.2,
-              datalabels: { align:'top', backgroundColor:'#1E88E5', borderRadius:4, color:'white', font:{weight:'bold'}, formatter: (val) => val === null ? '' : (val === 0 ? '0' : val) }
+              label: 'Produção', data: prodData, spanGaps: true, borderColor: accent, backgroundColor: accent,
+              borderWidth: 3, pointRadius: 5, pointBackgroundColor: getComputedStyle(document.body).getPropertyValue('--card-bg').trim(), tension: 0.2,
+              datalabels: { align:'top', backgroundColor:accent, borderRadius:4, color:'white', font:{weight:'bold'}, formatter: (val) => val === null ? '' : (val === 0 ? '0' : val) }
             },
             {
-              label: 'Meta', data: metaData, spanGaps: true, borderColor: '#EF5350', borderWidth: 2, borderDash: [6,6], pointRadius: 0, datalabels: { display: false }
+              label: 'Meta', data: metaData, spanGaps: true, borderColor: danger, borderWidth: 2, borderDash: [6,6], pointRadius: 0, datalabels: { display: false }
             }
           ]
         },
         options: {
           responsive:true, maintainAspectRatio:false,
-          scales: { y: { beginAtZero:true, grid:{color:gridColor}, ticks:{color:txtColor} }, x: { grid:{display:false}, ticks:{color:txtColor} } },
+          scales: { y: { beginAtZero:true, grid:{color:gridColor}, ticks:{color:txtColor, font:{family:'Poppins', weight:'600'}} }, x: { grid:{display:false}, ticks:{color:txtColor, font:{family:'Poppins', weight:'600'}} } },
           plugins: { 
-            legend: { labels: { color: txtColor } },
+            legend: { labels: { color: txtColor, font:{family:'Poppins', weight:'700'} } },
             tooltip: {
+              titleFont: {family: 'Poppins', size: 14},
+              bodyFont: {family: 'Poppins', size: 13},
               callbacks: {
                 afterBody: function(tooltipItems) {
                   let idx = tooltipItems[0].dataIndex; let dateVal = dates[idx];
@@ -1021,7 +932,6 @@
     });
   }
 
-  // --- PAGE 3: DETALHES ---
   function renderPage3() {
     let dates = getFilterDates();
     let filtered = rawData.filter(r => r.dateObj >= dates.start && r.dateObj <= dates.end);
@@ -1031,7 +941,7 @@
     window.tempMissingDataP3 = {}; 
     
     let fmtDate = d => d.getDate().toString().padStart(2,'0') + '/' + (d.getMonth()+1).toString().padStart(2,'0') + '/' + d.getFullYear();
-    document.getElementById('rankingPeriodDisplay').innerText = `Ranking de ${fmtDate(dates.start)} até ${fmtDate(dates.end)}`;
+    document.getElementById('rankingPeriodDisplay').innerText = `De ${fmtDate(dates.start)} até ${fmtDate(dates.end)}`;
 
     uniqueOficinasAll.forEach(of => {
         let dayRecords = filtered.filter(x => x.oficina === of);
@@ -1057,18 +967,19 @@
     rankingData.sort((a,b) => b.perc - a.perc);
 
     let rankCont = document.getElementById('rankingList'); rankCont.innerHTML = '';
-    if (rankingData.length === 0) rankCont.innerHTML = '<div style="color:var(--text-muted)">Sem dados para ranking.</div>';
+    if (rankingData.length === 0) rankCont.innerHTML = '<div style="color:var(--text-muted); font-weight:600;">Sem dados para ranking.</div>';
     else {
         rankingData.forEach((item, index) => {
             let color = getColorForPercentage(item.perc);
-            let div = document.createElement('div'); div.className = 'rank-item';
+            let div = document.createElement('div');
+            div.style.display = 'flex'; div.style.alignItems = 'center'; div.style.background = 'var(--input-bg)'; div.style.padding = '12px 18px'; div.style.borderRadius = '12px'; div.style.border = '1px solid var(--border-color)'; div.style.gap = '15px';
             div.innerHTML = `
-                <div class="rank-pos">#${index+1}</div>
-                <div class="rank-info">
-                    <div class="rank-name" title="${item.name}">${item.name}</div>
-                    <div class="rank-bar-bg"><div class="rank-bar-fill" style="width:${Math.min(item.perc, 100)}%; background:${color}"></div></div>
+                <div style="min-width: 40px; text-align: center; font-weight: 800; font-size: 1.2rem; color: var(--text-muted);">#${index+1}</div>
+                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; overflow: hidden;">
+                    <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.name}">${item.name}</div>
+                    <div style="height: 8px; width: 100%; background: var(--border-color); border-radius: 4px; overflow: hidden;"><div style="height: 100%; border-radius: 4px; width:${Math.min(item.perc, 100)}%; background:${color}"></div></div>
                 </div>
-                <div class="rank-val">${item.perc}%</div>
+                <div style="font-size: 1.1rem; font-weight: 800; text-align: right; min-width: 50px; color: var(--text-main);">${item.perc}%</div>
             `;
             rankCont.appendChild(div);
         });
@@ -1084,21 +995,22 @@
 
     let rankMissingCont = document.getElementById('rankingMissingList'); rankMissingCont.innerHTML = '';
     if (missingRankingData.length === 0) {
-        rankMissingCont.innerHTML = '<div style="color:var(--text-muted); font-size: 14px; padding: 10px;">Todas as malharias enviaram relatórios neste período.</div>';
+        rankMissingCont.innerHTML = '<div style="color:var(--text-muted); font-size: 0.9rem; font-weight: 600; padding: 10px;">Todas as malharias enviaram relatórios neste período.</div>';
     } else {
         let maxMissing = missingRankingData[0].count;
         missingRankingData.forEach((item, index) => {
             let widthPerc = (item.count / maxMissing) * 100;
-            let div = document.createElement('div'); div.className = 'rank-item'; div.style.cursor = 'pointer';
+            let div = document.createElement('div'); 
+            div.style.display = 'flex'; div.style.alignItems = 'center'; div.style.background = 'var(--input-bg)'; div.style.padding = '12px 18px'; div.style.borderRadius = '12px'; div.style.border = '1px solid var(--border-color)'; div.style.gap = '15px'; div.style.cursor = 'pointer';
             div.title = "Clique para ver os detalhes dos dias não informados";
             div.onclick = () => openMissingDetailsModal(item.name, item.dates);
             div.innerHTML = `
-                <div class="rank-pos">#${index+1}</div>
-                <div class="rank-info">
-                    <div class="rank-name" title="${item.name}">${item.name}</div>
-                    <div class="rank-bar-bg"><div class="rank-bar-fill" style="width:${widthPerc}%; background:var(--neutral-text, #9e9e9e)"></div></div>
+                <div style="min-width: 40px; text-align: center; font-weight: 800; font-size: 1.2rem; color: var(--text-muted);">#${index+1}</div>
+                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; overflow: hidden;">
+                    <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.name}">${item.name}</div>
+                    <div style="height: 8px; width: 100%; background: var(--border-color); border-radius: 4px; overflow: hidden;"><div style="height: 100%; border-radius: 4px; width:${widthPerc}%; background:var(--text-muted)"></div></div>
                 </div>
-                <div class="rank-val" style="font-weight: 700; color:var(--neutral-text, #9e9e9e)">${item.count} dias</div>
+                <div style="font-size: 1rem; font-weight: 800; text-align: right; min-width: 50px; color: var(--text-muted);">${item.count} dias</div>
             `;
             rankMissingCont.appendChild(div);
         });
@@ -1149,38 +1061,39 @@
         let isOk=inf.p>=inf.m;
         let hasInsumoZero = inf.p === 0 && inf.j.some(just => isSemInsumo(just));
         let statusText = isOk ? 'OK' : 'FALHA';
-        let statusColor = isOk ? 'var(--success-text)' : 'var(--danger-text)';
+        let statusColor = isOk ? 'var(--success)' : 'var(--danger)';
 
         if (hasInsumoZero) { statusText = 'S/ INSUMO'; statusColor = 'var(--warning-text-dark)'; }
         let dLabel = d;
-        if (isWknd) dLabel += ` <span style="font-size:10px; color:var(--warning-text-dark); font-weight:bold;">(${daysOfWeek[dayOfWeek]})</span>`;
+        if (isWknd) dLabel += ` <span style="font-size:0.65rem; color:var(--warning-text-dark); font-weight:800;">(${daysOfWeek[dayOfWeek]})</span>`;
 
         let uniqJ = [...new Set(inf.j)].filter(j => j && j.trim() !== "");
         let justNote = '';
         if (!isOk) {
-            justNote = `<div class="just-note">Motivo: ${uniqJ.length > 0 ? uniqJ.join(', ') : 'Não informado'}</div>`;
+            justNote = `<div style="font-size:0.75rem; color:var(--danger); background:var(--danger-bg); padding:6px 12px; border-radius:6px; margin-top:5px; font-weight:600;">Motivo: ${uniqJ.length > 0 ? uniqJ.join(', ') : 'Não informado'}</div>`;
         }
         
-        rows += `<div class="row-day"><span style="width:110px">${dLabel}</span><span style="flex:1; text-align:center">${inf.p} / ${inf.m}</span><span style="font-weight:700; color:${statusColor}">${statusText}</span></div>${justNote}`;
+        rows += `<div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px dashed var(--border-color); font-size:0.85rem;"><span style="width:110px; font-weight:600;">${dLabel}</span><span style="flex:1; text-align:center; font-weight:700;">${inf.p} <span style="color:var(--text-muted); font-size:0.75rem;">/ ${inf.m}</span></span><span style="font-weight:800; color:${statusColor}">${statusText}</span></div>${justNote}`;
       });
       
-      let el = document.createElement('div'); el.className='detail-card';
+      let el = document.createElement('div'); el.className='chart-card'; el.style.padding='0'; el.style.marginBottom='15px'; el.style.overflow='hidden';
       el.innerHTML=`
-        <div class="detail-head" onclick="this.parentElement.classList.toggle('open')">
-           <div style="display:flex; align-items:center; gap:10px">
-              <span style="font-weight:600">${of}</span>
-              ${missingDates.length > 0 ? `<span class="pill neutral" style="font-size:11px" onclick="event.stopPropagation(); openMissingDetailsModal('${of}', window.tempMissingDataP3['${of}'])">SR: ${missingDates.length} dias</span>` : ''}
-              ${insumoZeroCount > 0 ? `<span class="pill insumo" style="font-size:11px" title="Dias com produção 0 devido à falta de insumos">S/I: ${insumoZeroCount} dias</span>` : ''}
+        <div style="padding:15px 20px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:0.2s; background:var(--input-bg); border-bottom:1px solid var(--border-color);" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'">
+           <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <span style="font-weight:800; color:var(--accent); font-size:1.1rem; text-transform:uppercase;">${of}</span>
+              ${missingDates.length > 0 ? `<span class="st-badge neutral" style="border:1px solid var(--border-color);" onclick="event.stopPropagation(); openMissingDetailsModal('${of}', window.tempMissingDataP3['${of}'])">SR: ${missingDates.length} dias</span>` : ''}
+              ${insumoZeroCount > 0 ? `<span class="st-badge warn" title="Dias com produção 0 devido à falta de insumos">S/I: ${insumoZeroCount} dias</span>` : ''}
            </div>
-           <span>${okCount}/${tot} Dias (${pc}%)</span>
+           <span style="font-weight:700; color:var(--text-muted); font-size:0.9rem;">${okCount}/${tot} Dias (${pc}%)</span>
         </div>
-        <div class="detail-content">${rows}</div>`;
+        <div style="display:none; padding:20px;">${rows}</div>`;
       list.appendChild(el);
     });
 
     if(chartDetailsInst) chartDetailsInst.destroy();
     let ctx = document.getElementById('chartDetails').getContext('2d');
-    let txtColor = getThemeColor('--text-muted'); let gridColor = getThemeColor('--chart-grid');
+    let txtColor = getComputedStyle(document.body).getPropertyValue('--text-muted').trim(); 
+    let gridColor = getComputedStyle(document.body).getPropertyValue('--chart-grid').trim();
 
     chartDetailsInst = new Chart(ctx, {
         type: 'bar',
@@ -1189,27 +1102,27 @@
             datasets: [
                 {
                     label: 'Satisfatório', data: dataOk, backgroundColor: '#2E7D32', barPercentage: 0.5, categoryPercentage: 0.9,
-                    datalabels: { color: 'white', font: {size: 14, weight:'bold'}, display: (ctx)=>ctx.dataset.data[ctx.dataIndex]>0 }
+                    datalabels: { color: 'white', font: {size: 14, weight:'bold', family:'Poppins'}, display: (ctx)=>ctx.dataset.data[ctx.dataIndex]>0 }
                 },
                 {
                     label: 'Insuficiente', data: dataFail, backgroundColor: '#C62828', barPercentage: 0.5, categoryPercentage: 0.9,
-                    datalabels: { color: 'white', font: {size: 14, weight:'bold'}, display: (ctx)=>ctx.dataset.data[ctx.dataIndex]>0, formatter: (val) => val }
+                    datalabels: { color: 'white', font: {size: 14, weight:'bold', family:'Poppins'}, display: (ctx)=>ctx.dataset.data[ctx.dataIndex]>0, formatter: (val) => val }
                 }
             ]
         },
         options: {
             indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-            scales: { x: { stacked: true, grid: {color: gridColor}, ticks: {color:txtColor} }, y: { stacked: true, grid: {display:false}, ticks: { color:txtColor, font:{size:13, weight:'bold'}, autoSkip: false } } },
+            scales: { x: { stacked: true, grid: {color: gridColor}, ticks: {color:txtColor, font:{family:'Poppins', weight:'600'}} }, y: { stacked: true, grid: {display:false}, ticks: { color:txtColor, font:{size:12, weight:'bold', family:'Poppins'}, autoSkip: false } } },
             plugins: {
-                title: { display: true, text: 'Dias com meta satisfatória x Dias com meta insuficiente', color: txtColor, font: {size: 22, weight: '700'}, align: 'start', padding: {bottom: 15} },
-                legend: { labels: {color:txtColor} }, tooltip: { mode: 'index', intersect: true }, customLabels: { }
+                title: { display: true, text: 'Dias com meta satisfatória x Dias com meta insuficiente', color: txtColor, font: {size: 16, weight: '700', family:'Poppins'}, align: 'start', padding: {bottom: 15} },
+                legend: { labels: {color:txtColor, font:{family:'Poppins', weight:'600'}} }, tooltip: { mode: 'index', intersect: true }, customLabels: { }
             }
         },
         plugins: [{
             id: 'customLabels',
             afterDatasetsDraw: (chart) => {
                 const { ctx } = chart;
-                ctx.save(); ctx.font = Chart.helpers.fontString(14, 'bold', 'Poppins'); ctx.fillStyle = txtColor; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+                ctx.save(); ctx.font = Chart.helpers.fontString(12, 'bold', 'Poppins'); ctx.fillStyle = txtColor; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
                 const meta = chart.getDatasetMeta(1);
                 meta.data.forEach((bar, index) => {
                     let ok = dataOk[index]; let fail = dataFail[index]; let total = ok + fail;
@@ -1224,7 +1137,6 @@
     });
   }
 
-  // --- PAGE 4: DEMANDA ---
   function setupDemanda() {
     globalDemandas = [...new Set(rawData.map(r => r.item).filter(Boolean))].sort();
     let sel = document.getElementById('p4Demanda'); let currentVal = sel.value;
@@ -1238,7 +1150,7 @@
 
         globalDemandas.forEach(d => {
             let o = document.createElement('option'); o.value = d; sel.appendChild(o);
-            let optDiv = document.createElement('div'); optDiv.className = 'custom-option'; optDiv.innerText = d;
+            let optDiv = document.createElement('div'); optDiv.className = 'check-item'; optDiv.innerText = d;
             optDiv.onclick = (e) => { e.stopPropagation(); selectDemandaOption(d); };
             optsContainer.appendChild(optDiv);
         });
@@ -1266,7 +1178,7 @@
   function filterDemandaOptions(e) {
     if (e) e.stopPropagation();
     let query = document.getElementById('demandaSearchInput').value.toLowerCase();
-    let opts = document.querySelectorAll('#demandaOptionsContainer .custom-option');
+    let opts = document.querySelectorAll('#demandaOptionsContainer .check-item');
     opts.forEach(opt => {
         let text = opt.innerText.toLowerCase();
         if (text.includes(query)) opt.style.display = 'block'; else opt.style.display = 'none';
@@ -1323,7 +1235,7 @@
     filtered.forEach(r => totals[r.tipo] += r.producaoDia);
     
     let summaryHTML = '';
-    selPecas.forEach(p => { summaryHTML += `<div class="summary-item">${p}: ${totals[p]} un</div>`; });
+    selPecas.forEach(p => { summaryHTML += `<div style="background:var(--accent); color:white; padding:10px 15px; border-radius:12px; font-size:0.85rem; font-weight:600; box-shadow:var(--shadow);">${p}: ${totals[p]} un</div>`; });
     document.getElementById('p4Summary').innerHTML = summaryHTML;
 
     let dates = [...new Set(filtered.map(r => r.data))].sort((a,b)=>{
@@ -1342,15 +1254,16 @@
 
     let ctx = document.getElementById('chartDemanda').getContext('2d');
     if(chartDemandaInst) chartDemandaInst.destroy();
-    let gridColor = getThemeColor('--chart-grid'); let txtColor = getThemeColor('--text-muted');
+    let gridColor = getComputedStyle(document.body).getPropertyValue('--chart-grid').trim(); 
+    let txtColor = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
 
     chartDemandaInst = new Chart(ctx, {
       type: 'line',
       data: { labels: dates, datasets: datasets },
       options: {
         responsive: true, maintainAspectRatio: false,
-        scales: { y: { grid: {color:gridColor}, ticks:{color:txtColor} }, x: { grid:{display:false}, ticks:{color:txtColor} } },
-        plugins: { legend: { labels: { color: txtColor } }, datalabels: { display: 'auto', color: txtColor, anchor:'end', align:'top', offset:2, formatter: (val) => val === null ? '' : val } }
+        scales: { y: { grid: {color:gridColor}, ticks:{color:txtColor, font:{family:'Poppins', weight:'600'}} }, x: { grid:{display:false}, ticks:{color:txtColor, font:{family:'Poppins', weight:'600'}} } },
+        plugins: { legend: { labels: { color: txtColor, font:{family:'Poppins', weight:'600'} } }, datalabels: { display: 'auto', color: txtColor, anchor:'end', align:'top', offset:2, formatter: (val) => val === null ? '' : val, font:{family:'Poppins', weight:'bold'} } }
       }
     });
 
@@ -1365,17 +1278,17 @@
 
     if(Object.keys(oficinaTotals).length === 0) { breakdownCont.innerHTML = ''; return; }
 
-    let breakdownHtml = '<h4 style="margin-top:0; color:var(--text-main); font-size:14px; margin-bottom:15px;">Produção por Oficina (Peças Selecionadas)</h4><div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:10px;">';
+    let breakdownHtml = '<h4 style="margin-top:0; color:var(--text-main); font-size:1rem; margin-bottom:15px; text-transform:uppercase; font-weight:800;">Produção por Oficina (Peças Selecionadas)</h4><div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:15px;">';
     let sortedOficinas = Object.keys(oficinaTotals).sort((a,b) => oficinaTotals[b]['_total'] - oficinaTotals[a]['_total']);
     
     sortedOficinas.forEach(of => {
-       breakdownHtml += `<div style="background:var(--bg-body); padding:10px; border-radius:8px; border:1px solid var(--border);"><div style="font-weight:700; color:var(--primary); font-size:13px; margin-bottom:5px;">${of}</div>`;
+       breakdownHtml += `<div style="background:var(--input-bg); padding:15px; border-radius:12px; border:1px solid var(--border-color);"><div style="font-weight:800; color:var(--accent); font-size:0.95rem; margin-bottom:10px; text-transform:uppercase;">${of}</div>`;
        selPecas.forEach(p => {
           if(oficinaTotals[of][p] > 0) {
-              breakdownHtml += `<div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); border-bottom:1px dashed var(--border); padding:2px 0;"><span>${p}</span> <span style="font-weight:600; color:var(--text-main);">${oficinaTotals[of][p]}</span></div>`;
+              breakdownHtml += `<div style="display:flex; justify-content:space-between; font-size:0.85rem; color:var(--text-muted); border-bottom:1px dashed var(--border-color); padding:4px 0;"><span>${p}</span> <span style="font-weight:700; color:var(--text-main);">${oficinaTotals[of][p]}</span></div>`;
           }
        });
-       breakdownHtml += `<div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; margin-top:5px;"><span>TOTAL</span> <span style="color:var(--primary);">${oficinaTotals[of]['_total']}</span></div></div>`;
+       breakdownHtml += `<div style="display:flex; justify-content:space-between; font-size:0.9rem; font-weight:800; margin-top:8px;"><span>TOTAL</span> <span style="color:var(--accent);">${oficinaTotals[of]['_total']}</span></div></div>`;
     });
     breakdownHtml += '</div>'; breakdownCont.innerHTML = breakdownHtml;
   }
